@@ -5,6 +5,7 @@ const MAPJS = require('mindmup-mapjs'),
 	ThemeProcessor = require('mindmup-mapjs-layout').ThemeProcessor,
 	testMap = require('./example-map2'),
 	content = require('mindmup-mapjs-model').content,
+	socket_io = require('socket.io-client'),
 	init = function () {
 		'use strict';
 		const container = jQuery('#container'),
@@ -23,7 +24,9 @@ const MAPJS = require('mindmup-mapjs'),
 		mapModel.addEventListener('nodeAttrChanged', a);
 		mapModel.addEventListener('nodeSelectionChanged', a);
 		*/
-			
+		
+		var socket = socket_io.connect();
+		
 		jQuery.fn.attachmentEditorWidget = function (mapModel) {
 			return this.each(function () {
 				mapModel.addEventListener('attachmentOpened', function (nodeId, attachment) {
