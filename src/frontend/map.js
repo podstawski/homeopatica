@@ -10,11 +10,13 @@ const MAPJS = require('mindmup-mapjs'),
 
 module.exports = function(container_selector,theme_selector,socket,examination) {
 		'use strict';
+		
 		const container = jQuery(container_selector),
 			idea = content(testMap),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []);
 
-            
+        
+		
         if (typeof(examination)=='undefined') examination=0;
 					/*
 
@@ -36,7 +38,8 @@ module.exports = function(container_selector,theme_selector,socket,examination) 
 		container.domMapWidget(console, mapModel, false);
 		jQuery('body').mapToolbarWidget(mapModel);
 
-		mapModel.setIdea(idea);
+		if (examination==0) mapModel.setIdea(idea);
+		
 		
 
 }
