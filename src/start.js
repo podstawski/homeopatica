@@ -5,7 +5,15 @@ const 	map=require('./frontend/map'),
 const init = function () {
 	window.onerror = window.alert;
 	var socket = socket_io.connect();
-	map('#container','#themecss',socket);
+	
+	socket.emit('time',(new Date).getTime());
+	var loc=window.location+'';
+	var l=loc.match(/\/map\/([0-9]+)/);
+	if (l!=null) {
+        map('#container','#themecss',socket,parseInt(l[1]));
+    }
+	
+	
 }
 	
 	

@@ -4,15 +4,18 @@ const MAPJS = require('mindmup-mapjs'),
 	ThemeProcessor = require('mindmup-mapjs-layout').ThemeProcessor,
 	testMap = require('../example-map2'),
 	content = require('mindmup-mapjs-model').content,
+    mapSocket = require('./map-socket'),
 	scale = require('./scale');
 
 
-module.exports = function(container_selector,theme_selector,socket) {
+module.exports = function(container_selector,theme_selector,socket,examination) {
 		'use strict';
 		const container = jQuery(container_selector),
 			idea = content(testMap),
 			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []);
 
+            
+        if (typeof(examination)=='undefined') examination=0;
 					/*
 
 		var a = function (x,a,b,c) {
@@ -26,7 +29,8 @@ module.exports = function(container_selector,theme_selector,socket) {
 		*/
 		
 		scale(mapModel);
-		
+       
+		mapSocket(mapModel,socket,examination);
 
 		jQuery(theme_selector).themeCssWidget(themeProvider, new ThemeProcessor(), mapModel);
 		container.domMapWidget(console, mapModel, false);

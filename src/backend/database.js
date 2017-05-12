@@ -20,7 +20,10 @@ var DB = function(opt,cb) {
     
     return {
         't': function(name) {
-            
+            if (typeof(tables[name])!='undefined') return tables[name];
+            tables[name]=newmodel(name);
+            tables[name].init();
+            return tables[name];
         }
     }
 }

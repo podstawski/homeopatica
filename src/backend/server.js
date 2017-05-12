@@ -1,17 +1,36 @@
-var express = require('express');
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
-var http = require('http');
+const express = require('express');
+const util = require('util');
+const EventEmitter = require('events').EventEmitter;
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const Map = require('./map-db.js');
 
 
-var Server = function(options,logger) {
+var Server = function(options,database,logger) {
     var self=this;
     var app = express();
     if (logger==null) logger=console;
+  
 
     app.use(express.static(options.public_path));
     
     var get=function (request, response) {
+
+        var getContents = function(url) {
+            url=path.dirname(url);
+            
+            fs.readFile(url+'/index.html',function(err,data){
+                if (err) {
+                    getContents(url);
+                } else {
+                    response.write(data, "utf8");
+                    response.end();
+                }
+            });
+        }
+        
+        getContents(__dirname+'/../../public'+request.url);
     };
     app.get('/*',get);
     
@@ -32,6 +51,7 @@ var Server = function(options,logger) {
             logger.log('Bye :)');    
         };
         logger.log('Hi there :)');
+        new Map(database,httpSocket);
         httpSocket.on('disconnect',disconnect);
     };
     

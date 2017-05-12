@@ -12,17 +12,17 @@ var Model = function(opt,logger) {
     var connect = function (cb) {
         var token=opt.host+':'+opt.database;
         if (connection!=null) {
-            cb();
+            if(typeof(cb)=='function') cb();
         } else if (connections[token]!==undefined){
             connection=connections[token];
-            cb();
+            if(typeof(cb)=='function') cb();
         } else {
             connection=mysql.createConnection(opt);
             connection.connect(function(err){
                 if(!err) {
                     connections[token]=connection;
                     logger.log('Database '+opt.database+' is connected');
-                    cb();
+                    if(typeof(cb)=='function') cb();
                 } else {
                     connection=null;
                     logger.log('Error connecting database '+opt.database,err);
@@ -194,6 +194,10 @@ var Model = function(opt,logger) {
     
     return {
         init: function (cb) {
+            if (inited) {
+                if (cb) cb();
+                return;
+            }
             connect(function(){
                 var sql='SELECT * FROM information_schema.tables WHERE table_schema = \''+opt.database+'\' AND table_name = \''+opt.table+'\' LIMIT 1;';
                 connection.query(sql, function(err, rows, fields) {
