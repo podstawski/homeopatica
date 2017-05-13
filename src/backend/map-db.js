@@ -43,6 +43,13 @@ module.exports = function (database,socket) {
         ret();
     };
     
+    var node = function(node,obj) {
+        console.log(node,obj);
+        
+        if (node[1]=='examination') examination.set(obj,node[2]);
+    }
+    
     socket.on('examination',examination_map);
     socket.on('time',time);
+    socket.on('node',node);
 }
