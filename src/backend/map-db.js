@@ -11,6 +11,7 @@ module.exports = function (database,socket,sockets,session) {
     var examination=database.t('examination');
     var question=database.t('question');
     var remedy=database.t('remedy');
+    var examination_id=0;
     
     var time_delta=0;
     
@@ -43,15 +44,33 @@ module.exports = function (database,socket,sockets,session) {
     
     var examination_map=function(id) {
 
+        examination_id=id;
         for (var x in sockets) {
-            if (sockets[x].socket==socket) sockets[x].examination=id;
+            if (sockets[x].socket==socket) sockets[x].examination=examination_id;
         }
         
         var examination_map_counter=0;
         var result={examination:{},questions:[],remedies:[]};
         
+        const get_questions=function(parent,questions) {
+            examination_map_counter++;
+            question.select([{examination: id, parent:parent}],null,function(data){
+                
+                for (var i=0; i<data.recordsTotal; i++) {
+                    questions.push(data.data[i]);
+                    data.data[i].questions=[];
+                    get_questions(data.data[i].id, data.data[i].questions);
+                    
+                }
+                examination_map_counter--;
+            });
+        }
+        
         examination_map_counter++;
         examination.init(function(){
+            
+            get_questions(null,result.questions);
+            
             examination.get(id,function(data){
                 if (data) {
                     data.date-=time_delta;
@@ -80,10 +99,36 @@ module.exports = function (database,socket,sockets,session) {
     
     
     var node = function(node,obj) {
-        if (node[1]=='examination') {
-            examination.set(obj,node[2]);
-            socket.emit('pass',genPass());
+        if (typeof(node)=='undefined') {
+            question.add({examination:examination_id},function(q) {
+                socket.emit('newnode','question',q.id);
+            });
+            return;
         }
+        
+        if (node[0]!=examination_id) return;
+        
+        database.t(node[1]).init(function(){
+            
+            if (node[2]==0) {
+                if (obj==null) obj={};
+                if (node[1]!='examination') obj.examination=examination_id;
+                
+                database.t(node[1]).add(obj,function(d){
+                     socket.emit('newnode',d.id);
+                     socket.emit('pass',genPass());
+                });
+                
+            } else {
+            
+                database.t(node[1]).set(obj,node[2]);
+                socket.emit('pass',genPass());
+            }
+            
+        });
+        
+        
+
     }
     
     var echo = function(pass,w) {

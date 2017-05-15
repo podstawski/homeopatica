@@ -90,13 +90,16 @@ var Model = function(opt,logger) {
                 break;
             };
             case 'fk': {
-                sql+='INT(6), ADD CONSTRAINT FOREIGN KEY ('+k+') REFERENCES '+k+'(id)';  
+                sql+='INT(6) UNSIGNED, ADD CONSTRAINT FOREIGN KEY ('+k+') REFERENCES '+k+'(id)';
+                break;
             };
             case 'fks': {
-                sql+='INT(6), ADD CONSTRAINT FOREIGN KEY ('+opt.table+') REFERENCES '+opt.table+'(id)';  
+                sql+='INT(6) UNSIGNED, ADD CONSTRAINT FOREIGN KEY ('+k+') REFERENCES '+opt.table+'(id)';  
+                break;
             };
             default:
                 sql+='text';
+                break
         }
         
         
@@ -108,6 +111,7 @@ var Model = function(opt,logger) {
     var checkFields = function (d,cb) {
         var sql='';
     
+        
         for (var k in d) {
             if (typeof(_fields[k])=='undefined') {
                 sql+=addFieldSql(k,d[k])+',';
@@ -118,6 +122,7 @@ var Model = function(opt,logger) {
         } else {
             
             sql='ALTER TABLE '+opt.table+' '+sql.substr(0,sql.length-1);
+            //console.log(sql);
             connection.query(sql, function(err, rows) {
                 if (!err) {
                     getFields(cb);
@@ -129,6 +134,7 @@ var Model = function(opt,logger) {
     
     var where2whereObj = function(where,cb) {
         var obj={};
+        
         for (var i=0; i<where.length; i++) {
             for (var k in where[i]) {
                 obj[k]=where[i][k];
@@ -211,7 +217,7 @@ var Model = function(opt,logger) {
                         sql+='_created BIGINT, ';
                         sql+='_updated BIGINT';
                         sql+=') DEFAULT CHARACTER SET=utf8;';
-                        console.log(sql);
+                        //console.log(sql);
                         connection.query(sql,function() {
                             inited=true;
                             getFields(cb);
@@ -244,9 +250,11 @@ var Model = function(opt,logger) {
             if (order) orderby=' ORDER BY '+order.join(',');
             
             if (where) {
+                
                 where2whereObj(where,function(obj){
                     sql+=' WHERE '+obj.where;
                     
+                    //console.log(sql);
                     connection.query(sql+orderby,obj.values,function(err, rows) {
                         if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
                         else cb({recordsTotal:0,data:[],ctx:ctx});
