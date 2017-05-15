@@ -7,6 +7,9 @@ const init = function () {
 	var socket = socket_io.connect();
 	
 	socket.emit('time',(new Date).getTime());
+	socket.on('cookie',function(name,value){
+		document.cookie=name+'='+value+'; path=/';
+	});
 	var loc=window.location+'';
 	var l=loc.match(/\/map\/([0-9]+)/);
 	if (l!=null) {

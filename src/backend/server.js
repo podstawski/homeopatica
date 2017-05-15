@@ -5,11 +5,29 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const Map = require('./map-db.js');
+const crypto = require('crypto');
+
+function parseCookies (rc) {
+    var list = {};
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+    return list;
+}
+
+function md5(txt) {
+    var md5sum = crypto.createHash('md5');
+    md5sum.update(txt);
+    return md5sum.digest('hex');
+}
 
 
 var Server = function(options,database,logger) {
     var self=this;
     var app = express();
+    var httpClients=[];
+    var session={};
     if (logger==null) logger=console;
   
 
@@ -47,11 +65,36 @@ var Server = function(options,database,logger) {
     
 
     var connection = function(httpSocket) {
+        var cookies=parseCookies(httpSocket.handshake.headers.cookie);
+        
+        if (typeof(cookies.sessid)!='undefined') {
+            var hash=cookies.sessid;
+        } else {
+            var hash=md5(Math.random()+'_'+Date.now());
+            httpSocket.emit('cookie','sessid',hash);
+        }
+        
+        if (typeof(session[hash])=='undefined') {
+            session[hash]={};
+        }
+        
+        session[hash].socket=httpSocket;
+        session[hash].hb=Date.now();
+        
+        
+        httpClients.push({socket:httpSocket,session:session[hash]});
+        
         var disconnect = function() {
-            logger.log('Bye :)');    
+            for (var x in httpClients) {
+                if (httpClients[x].socket==httpSocket) {
+                   httpClients[x].session.socket=null;
+                   httpClients.splice(x,1);
+                   break;
+                }
+            }  
         };
         logger.log('Hi there :)');
-        new Map(database,httpSocket);
+        new Map(database,httpSocket,httpClients,session[hash]);
         httpSocket.on('disconnect',disconnect);
     };
     

@@ -1,5 +1,13 @@
+const crypto = require('crypto');
 
-module.exports = function (database,socket) {
+function md5(txt) {
+    var md5sum = crypto.createHash('md5');
+    md5sum.update(txt);
+    return md5sum.digest('hex');
+}
+
+
+module.exports = function (database,socket,sockets,session) {
     var examination=database.t('examination');
     var question=database.t('question');
     var remedy=database.t('remedy');
@@ -10,8 +18,35 @@ module.exports = function (database,socket) {
         time_delta=t-(new Date).getTime();
     };
     
+    var passwords={};
+  
+    var genPass = function() {
+        var hash=md5(Math.random()+'_'+Date.now());
+        passwords[hash]=Date.now();
+        return hash;
+    }
+  
+    
+    var wall = function (w) {
+        var id;
+        for (var x in sockets) {
+            if (sockets[x].socket==socket) id=sockets[x].examination;
+        }
+        
+        for (var x in sockets) {
+            if (sockets[x].socket==socket) continue;
+            if (typeof(sockets[x].examination)=='undefined' || sockets[x].examination!=id) continue;
+        
+            sockets[x].socket.emit('wall',w);
+        }    
+    }
+    
     var examination_map=function(id) {
 
+        for (var x in sockets) {
+            if (sockets[x].socket==socket) sockets[x].examination=id;
+        }
+        
         var examination_map_counter=0;
         var result={examination:{},questions:[],remedies:[]};
         
@@ -43,13 +78,23 @@ module.exports = function (database,socket) {
         ret();
     };
     
+    
     var node = function(node,obj) {
-        console.log(node,obj);
-        
-        if (node[1]=='examination') examination.set(obj,node[2]);
+        if (node[1]=='examination') {
+            examination.set(obj,node[2]);
+            socket.emit('pass',genPass());
+        }
+    }
+    
+    var echo = function(pass,w) {
+        if (typeof(passwords[pass])=='undefined') return;
+        if (Date.now() - passwords[pass]>5000) return;
+        delete(passwords[pass]);
+        wall(w);
     }
     
     socket.on('examination',examination_map);
     socket.on('time',time);
     socket.on('node',node);
+    socket.on('wall',echo);
 }
