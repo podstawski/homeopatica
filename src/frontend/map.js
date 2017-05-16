@@ -32,7 +32,7 @@ module.exports = function(container_selector,theme_selector,socket,examination) 
 		
 		scale(mapModel);
        
-		mapSocket(mapModel,socket,examination);
+		new mapSocket(mapModel,socket,examination);
 
 		jQuery(theme_selector).themeCssWidget(themeProvider, new ThemeProcessor(), mapModel);
 		container.domMapWidget(console, mapModel, false);

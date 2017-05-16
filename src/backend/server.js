@@ -29,6 +29,7 @@ var Server = function(options,database,logger) {
     var httpClients=[];
     var session={};
     if (logger==null) logger=console;
+    var map;
   
 
     app.use(express.static(options.public_path));
@@ -94,7 +95,7 @@ var Server = function(options,database,logger) {
             }  
         };
         logger.log('Hi there :)');
-        new Map(database,httpSocket,httpClients,session[hash]);
+        var map = new Map(database,httpSocket,httpClients,session[hash]);
         httpSocket.on('disconnect',disconnect);
     };
     

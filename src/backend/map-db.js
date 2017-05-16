@@ -66,10 +66,21 @@ module.exports = function (database,socket,sockets,session) {
             });
         }
         
+        const get_remedies=function(remedies) {
+            examination_map_counter++;
+            remedy.select([{examination: id}],null,function(data){
+                for (var i=0; i<data.recordsTotal; i++) {
+                    remedies.push(data.data[i]);
+                }
+                examination_map_counter--;
+            });
+        }
+        
         examination_map_counter++;
         examination.init(function(){
             
             get_questions(null,result.questions);
+            get_remedies(result.remedies);
             
             examination.get(id,function(data){
                 if (data) {
@@ -99,18 +110,12 @@ module.exports = function (database,socket,sockets,session) {
     
     
     var node = function(node,obj) {
-        if (typeof(node)=='undefined') {
-            question.add({examination:examination_id},function(q) {
-                socket.emit('newnode','question',q.id);
-            });
-            return;
-        }
         
         if (node[0]!=examination_id) return;
         
         database.t(node[1]).init(function(){
             
-            if (node[2]==0) {
+            if (node[2]==0) { // new record
                 if (obj==null) obj={};
                 if (node[1]!='examination') obj.examination=examination_id;
                 
@@ -121,7 +126,11 @@ module.exports = function (database,socket,sockets,session) {
                 
             } else {
             
-                database.t(node[1]).set(obj,node[2]);
+                if (obj==null) { //remove
+                    database.t(node[1]).remove(node[2]);
+                } else {
+                    database.t(node[1]).set(obj,node[2]);
+                }
                 socket.emit('pass',genPass());
             }
             

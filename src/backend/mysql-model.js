@@ -334,7 +334,7 @@ var Model = function(opt,logger) {
             var sql="DELETE FROM "+opt.table+" WHERE "+indexCondition(idx);
     
             connection.query(sql,function(err,res) {
-                if (!err) cb();
+                if (!err && cb) cb();
             });
         },
         
