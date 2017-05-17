@@ -271,13 +271,23 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (dy<0) dy=10;
         if (dy+ch+30 > bh) dy=bh-ch-30;
         
-        
+        menuContainer.addClass(nodes[node_id][1]);
         
         menuContainer.css({left:dx,top:dy}).fadeIn(900);
     });
     
     menuContainer.click(function(){
-        jQuery(this).fadeOut(300);
+        jQuery(this).fadeOut(300,function(){
+            menuContainer.removeClass('examination');
+            menuContainer.removeClass('remedy');
+            menuContainer.removeClass('question');
+            
+            
+        });
+    });
+    
+    menuContainer.find('.imp').click(function(){
+        menuContainer.find('.updateStyle').val(jQuery(this).css('background-color'));
     });
     
 }

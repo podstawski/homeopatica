@@ -18,12 +18,89 @@ body {
 
 .mapjs-context-menu {
 	position: absolute;
-	width:200px;
-	border: 1px solid red;
+	width:240px;
+	border: 2px solid #00a000;
 	border-radius: 8px;
 	padding: 10px;
-	background-color: rgba(0,0,0,0.4);
+	background-color: rgba(0,0,0,0.7);
+	background-image: url('x.png');
+	background-repeat: no-repeat;
+	background-position: right top;
 	z-index: 10;
+	display: none;
+}
+
+.mapjs-context-menu .icon {
+	width:9%;
+	height: 24px;
+	background-size: 100%;
+	background-repeat: no-repeat;
+	display: inline-block;
+	margin: 2px;
+	cursor: pointer;
+}
+
+.mapjs-context-menu .imp {
+	width:9%;
+	height: 18px;
+	border-radius: 50%;
+	display: inline-block;
+	cursor: pointer;
+	text-align: center;
+	font-family: Arial;
+	font-size: 10px;
+	padding-top: 4px;
+	margin: 5px 2px;
+}
+
+.mapjs-context-menu .icon.addSubIdea {
+	background-image: url('add.svg');
+}
+
+.mapjs-context-menu .icon.editNode {
+	background-image: url('edit.svg');
+}
+
+.mapjs-context-menu .icon.insertRoot {
+	background-image: url('pills.svg');
+}
+
+.mapjs-context-menu .icon.copy {
+	background-image: url('copy.svg');
+}
+
+.mapjs-context-menu .icon.paste {
+	background-image: url('paste.svg');
+}
+
+.mapjs-context-menu .icon.removeSubIdea {
+	background-image: url('delete.svg');
+}
+
+.mapjs-context-menu .icon.undo {
+	background-image: url('undo.svg');
+}
+
+.mapjs-context-menu .icon.redo {
+	background-image: url('redo.svg');
+}
+
+.mapjs-context-menu .separator {
+	border-width: 2px 0 0 0;
+	border-style: solid;
+	border-color: #00a000;
+}
+
+
+
+.mapjs-context-menu.examination .icon.removeSubIdea,
+.mapjs-context-menu.examination .icon.copy,
+.mapjs-context-menu.examination .icon.insertRoot,
+.mapjs-context-menu.remedy .icon.addSubIdea,
+.mapjs-context-menu.remedy .icon.insertRoot,
+.mapjs-context-menu.remedy .icon.copy,
+.mapjs-context-menu.remedy .icon.paste
+{
 	display: none;
 }
 

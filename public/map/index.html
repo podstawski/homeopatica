@@ -4,55 +4,26 @@
 		<link rel="stylesheet" type="text/css" href="/css/mapjs-default-styles.css"></link>
 	</head>
 	<body>
-		<style>
-			
-			#testcontrols2 {
-				height: 20%;
-				overflow: hidden;
-				padding: 8px;
-			}
-			
 
-		</style>
 		<div id="context-menu" class="mapjs-context-menu">
-			<input type="button" class="resetView" value="0"></input>
-			<input type="button" class="scaleUp" value="+"></input>
-			<input type="button" class="scaleDown" value="-"></input>
-			<input type="button" class="addSubIdea" value="add"></input>
-			<input type="button" onclick="mapModel.insertIntermediateGroup('click', {group:'supporting'})" value="parent reason"></input>
-			<input type="button" onclick="mapModel.addGroupSubidea('click', {group:'supporting'})" value="supporting group"></input>
-			<input type="button" onclick="mapModel.addGroupSubidea('click', {group:'opposing'})" value="opposing group"></input>
-			<input type="button" class="editNode" value="edit"></input>
-			<input type="button" class="removeSubIdea" value="delete"></input>
-			<input type="button" class="insertIntermediate" value="insert parent"></input>
-			<input type="button" class="toggleCollapse" value="exp/col"></input>
-			<input type="button" onclick="mapModel.setInputEnabled(false)" value="disable"></input>
-			<input type="button" onclick="mapModel.setInputEnabled(true)" value="enable"></input>
-			<input type="button" class="undo" value="undo"></input>
-			<input type="button" class="redo" value="redo"></input>
-			<input type="button" data-mm-action="export-image" value="Export To Image"/>
-			<input type="button" class="cut" value="cut"></input>
-			<input type="button" class="copy" value="copy"></input>
-			<input type="button" class="paste" value="paste"></input>
-			<input type="button" class="openAttachment" value="open attachment"></input>
-			<input type="button" class="toggleAddLinkMode" value="add link"></input>
-			<input type="button" class="insertRoot" value="add root node"></input>
-			<input type="button" class="makeSelectedNodeRoot" value="make root"></input>
-			Background: <input type="text" class='updateStyle' data-mm-target-property='background'></input>
-			Frames: <span id="framerate"></span>
-			Cycle: <span id="cyclerate"></span>
-			<div id="linkEditWidget">
-				<input class="delete" type="button" value="Delete"></input>
-				<select class="color">
-					<option value="red">Red</option>
-					<option value="blue">Blue</option>
-				</select>
-				<select class="lineStyle">
-					<option value="solid">Solid</option>
-					<option value="dashed">Dashed</option>
-				</select>
-				<button class="arrow">Arrow</button>
-			</div>
+			<div class="icon addSubIdea"></div>
+			<div class="icon editNode"></div>
+			<div class="icon insertRoot"></div>
+			<div class="icon copy"></div>
+			<div class="icon paste"></div>
+			<div class="icon removeSubIdea"></div>
+			<div class="icon undo"></div>
+			<div class="icon redo"></div>
+			
+			<div class="separator s1"></div>
+			
+			<div class="imp" style="background-color: #50FF50">1</div>
+			<div class="imp" style="background-color: #FFFF50">2</div>
+			
+			<div class="separator s2"></div>
+			
+			<input type="text" class='updateStyle' data-mm-target-property='background'></input>
+			
 		</div>
 		
 		
