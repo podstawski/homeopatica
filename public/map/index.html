@@ -5,26 +5,16 @@
 	</head>
 	<body>
 		<style>
-			body {
-				margin: 0;
-				padding: 0;
-				overflow: hidden;
-			}
-			#testcontrols {
-				height: 70px;
+			
+			#testcontrols2 {
+				height: 20%;
 				overflow: hidden;
 				padding: 8px;
 			}
-			#container {
-				background-color: #FFFFFF;
-
-				height: calc(100% - 70px);
-				width: 100%;
-				border: 1px dashed black;
-			}
+			
 
 		</style>
-		<div id="testcontrols">
+		<div id="context-menu" class="mapjs-context-menu">
 			<input type="button" class="resetView" value="0"></input>
 			<input type="button" class="scaleUp" value="+"></input>
 			<input type="button" class="scaleDown" value="-"></input>
@@ -64,7 +54,10 @@
 				<button class="arrow">Arrow</button>
 			</div>
 		</div>
-		<div id="container"></div>
+		
+		
+		<div id="container" class="mapjs-container loader">
+		</div>
 		<style id="themecss">
 		</style>
 		<script src="/site/main.js"></script>

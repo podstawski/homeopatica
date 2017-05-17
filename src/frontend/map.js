@@ -8,31 +8,23 @@ const MAPJS = require('mindmup-mapjs'),
 	scale = require('./scale');
 
 
-module.exports = function(container_selector,theme_selector,socket,examination) {
+module.exports = function(container_selector,theme_selector,menu_selector,socket,examination) {
 		'use strict';
 		
-		const container = jQuery(container_selector),
-			idea = content(testMap),
-			mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []);
+		const 	container = jQuery(container_selector),
+				menu = jQuery(menu_selector),
+				idea = content(testMap),
+				mapModel = new MAPJS.MapModel(MAPJS.DOMRender.layoutCalculator, []);
 
         
 		
         if (typeof(examination)=='undefined') examination=0;
-					/*
 
-		var a = function (x,a,b,c) {
-			console.log(x,a, b, c);
-		};
-		mapModel.addEventListener('nodeTitleChanged', a);
-		mapModel.addEventListener('nodeMoved', a);
-		//mapModel.addEventListener('nodeCreated', a);
-		mapModel.addEventListener('nodeAttrChanged', a);
-		mapModel.addEventListener('nodeSelectionChanged', a);
-		*/
 		
 		scale(mapModel);
        
-		new mapSocket(mapModel,socket,examination);
+		new mapSocket(mapModel,socket,examination,container,menu);
+
 
 		jQuery(theme_selector).themeCssWidget(themeProvider, new ThemeProcessor(), mapModel);
 		container.domMapWidget(console, mapModel, false);

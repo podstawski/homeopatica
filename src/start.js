@@ -13,7 +13,7 @@ const init = function () {
 	var loc=window.location+'';
 	var l=loc.match(/\/map\/([0-9]+)/);
 	if (l!=null) {
-        map('#container','#themecss',socket,parseInt(l[1]));
+        map('#container','#themecss','#context-menu',socket,parseInt(l[1]));
     }
 	
 	

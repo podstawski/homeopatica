@@ -1,9 +1,10 @@
 const   content = require('mindmup-mapjs-model').content,
+        jQuery = require('jquery'),
         moment = require('moment');
 
 
 
-module.exports = function (mapModel,socket,eid) {
+module.exports = function (mapModel,socket,eid,container,menuContainer) {
     
     if (eid==0) return;
     var nodes={},
@@ -65,7 +66,7 @@ module.exports = function (mapModel,socket,eid) {
         });
         
      
-     
+        container.removeClass('loader');
         mapModel.setIdea(content(map));
         globalLock=false;
     });
@@ -252,5 +253,31 @@ module.exports = function (mapModel,socket,eid) {
     };
     
     mapModel.addEventListener('nodeRemoved', nodeRemoved);
+    
+    mapModel.addEventListener('contextMenuRequested',function(node_id,x,y){
+        
+        const   bw=jQuery('body').width(),
+                bh=jQuery('body').height(),
+                cw=menuContainer.width(),
+                ch=menuContainer.height();
+        var dx,dy;
+    
+        
+        
+        if (x>bw/2) dx=x-cw-30;
+        else dx=x+30;
+        
+        dy=y-ch/2;
+        if (dy<0) dy=10;
+        if (dy+ch+30 > bh) dy=bh-ch-30;
+        
+        
+        
+        menuContainer.css({left:dx,top:dy}).fadeIn(900);
+    });
+    
+    menuContainer.click(function(){
+        jQuery(this).fadeOut(300);
+    });
     
 }
