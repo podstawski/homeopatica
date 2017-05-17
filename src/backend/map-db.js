@@ -8,7 +8,7 @@ function md5(txt) {
 
 
 module.exports = function (database,socket,sockets,session) {
-    var examination=database.t('examination');
+    var examination=database.t('examination'); 
     var question=database.t('question');
     var remedy=database.t('remedy');
     var examination_id=0;
@@ -53,6 +53,7 @@ module.exports = function (database,socket,sockets,session) {
         var result={examination:{},questions:[],remedies:[]};
         
         const get_questions=function(parent,questions) {
+            
             examination_map_counter++;
             question.select([{examination: id, parent:parent}],null,function(data){
                 
@@ -64,9 +65,11 @@ module.exports = function (database,socket,sockets,session) {
                 }
                 examination_map_counter--;
             });
+            
         }
         
         const get_remedies=function(remedies) {
+            
             examination_map_counter++;
             remedy.select([{examination: id}],null,function(data){
                 for (var i=0; i<data.recordsTotal; i++) {
@@ -74,26 +77,30 @@ module.exports = function (database,socket,sockets,session) {
                 }
                 examination_map_counter--;
             });
+            
         }
         
         examination_map_counter++;
         examination.init(function(){
-            
-            get_questions(null,result.questions);
-            get_remedies(result.remedies);
-            
-            examination.get(id,function(data){
-                if (data) {
-                    data.date-=time_delta;
-                    result.examination=data;
-                    examination_map_counter--;
-                } else {
-                    examination.add({id:id, 'date': (new Date).getTime()},function(data){
-                        data.date-=time_delta;
-                        result.examination=data;
-                        examination_map_counter--;
+            question.init(function(){
+                remedy.init(function(){
+                    get_questions(null,result.questions);
+                    get_remedies(result.remedies);
+                    
+                    examination.get(id,function(data){
+                        if (data) {
+                            data.date-=time_delta;
+                            result.examination=data;
+                            examination_map_counter--;
+                        } else {
+                            examination.add({id:id, 'date': (new Date).getTime()},function(data){
+                                data.date-=time_delta;
+                                result.examination=data;
+                                examination_map_counter--;
+                            });
+                        }
                     });
-                }
+                });
             });
         });
         

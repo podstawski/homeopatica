@@ -6,6 +6,7 @@ var Model = function(opt,logger) {
     var connection=null;
     var _fields;
     var inited=false;
+    var self=this;
     
     if (logger==null) logger=console;
 
@@ -27,7 +28,12 @@ var Model = function(opt,logger) {
                     connection=null;
                     logger.log('Error connecting database '+opt.database,err);
                 }
-            });        
+            });
+            connection.on('error', function(err) {
+                connection=null;
+                logger.log(err);
+                conect();
+            });
         }
     }
     
@@ -202,7 +208,7 @@ var Model = function(opt,logger) {
         init: function (cb) {
             if (inited) {
                 if (cb) cb();
-                return;
+                return self;
             }
             connect(function(){
                 var sql='SELECT * FROM information_schema.tables WHERE table_schema = \''+opt.database+'\' AND table_name = \''+opt.table+'\' LIMIT 1;';
@@ -218,18 +224,23 @@ var Model = function(opt,logger) {
                         sql+='_updated BIGINT';
                         sql+=') DEFAULT CHARACTER SET=utf8;';
                         //console.log(sql);
-                        connection.query(sql,function() {
-                            inited=true;
-                            getFields(cb);
+                        connection.query(sql,function() {                            
+                            getFields(function(){
+                                inited=true;
+                                if (cb) cb();
+                            });
                         });
                     } else {
-                        inited=true;
-                        getFields(cb);
+                        getFields(function(){
+                            inited=true;
+                            if (cb) cb();
+                        });
                     }
                     
                 });
 
             });
+            return self;
         },
         
         getAll: function(cb) {
