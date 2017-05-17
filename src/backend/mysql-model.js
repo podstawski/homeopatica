@@ -32,7 +32,7 @@ var Model = function(opt,logger) {
             connection.on('error', function(err) {
                 connection=null;
                 logger.log(err);
-                conect();
+                connect();
             });
         }
     }
