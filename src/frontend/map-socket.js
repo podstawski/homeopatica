@@ -12,7 +12,8 @@ module.exports = function (mapModel,socket,eid) {
         newnodes={},
         globalLock=true,
         callbacks=[];
- 
+    var node_counter = 0,
+        last_created_node;
     var self=this;
     
     var nodeIdx=function(v) {
@@ -32,8 +33,6 @@ module.exports = function (mapModel,socket,eid) {
         console.log(examination);
         var map={id: 'root', formatVersion: 3, ideas: {}};
           
-        var node_counter = 0;
-        
         const join_ideas = function (src,dst,table,sub,notitlefun) {
             if (src.length==0) return;
             if (typeof(dst.ideas)=='undefined') dst.ideas={};
@@ -75,7 +74,7 @@ module.exports = function (mapModel,socket,eid) {
     socket.on('wall',function(w){
         
         var idx=nodeIdx(w[2][0]);
-        if (idx==-1) return;
+        //if (idx==-1) return;
         w[2][0]=idx;
 
 
@@ -109,6 +108,26 @@ module.exports = function (mapModel,socket,eid) {
         return true;
     }
     
+    
+    self.nodeCreate = function(x,table,params,id) {   
+        let currentNode = mapModel.getSelectedNodeId();
+     
+        if (table=='remedy') {
+            mapModel.insertRoot('socket',params.title?params.title:null);
+            nodes[last_created_node]=[eid,table,id];
+        }
+        if (table=='question') {
+            var parentId=1;
+            if (params.parent!=null) {
+                parentId=Math.abs(nodeIdx([eid,table,params.parent]));
+            }
+            mapModel.addSubIdea('socket',parentId,params.title?params.title:null);
+            nodes[last_created_node]=[eid,table,id];
+        }
+        
+        mapModel.selectNode(currentNode,true);
+    }
+    
     const createNode = function (node_id,table,params) {
         if (typeof(newnodes[node_id])=='undefined') return;
         
@@ -120,9 +139,19 @@ module.exports = function (mapModel,socket,eid) {
             params.attr=newnodes[node_id].attr;
         }
         delete(newnodes[node_id]);
+        if (!lockWall('createNode','nodeCreate',-1,[[0,table,0],table,params,0])) return;
+        
+     
         socket.emit('node',[eid,table,0],params);
         socket.once('newnode',function(id){
             nodes[node_id]=[eid,table,id];
+            for (var i=0; i<walls.length; i++) {
+                if (walls[i][0]=='createNode') {
+                    walls[i][2][3]=id;
+                    break;
+                }
+            }
+            
         });        
     }
     
@@ -150,7 +179,7 @@ module.exports = function (mapModel,socket,eid) {
 
     mapModel.addEventListener('nodeCreated', function(node){
         if (globalLock) return;
-        
+        last_created_node=node.id;
         newnodes[node.id]=node;
         
         callbacks.push(function(){ //if it is new root, there will be no connector
@@ -194,7 +223,7 @@ module.exports = function (mapModel,socket,eid) {
     });
     
     self.removeNode = function(node_id) {
-        let currentNode = mapModel.getCurrentlySelectedIdeaId();
+        let currentNode = mapModel.getSelectedNodeId();
         mapModel.selectNode(node_id,true);
         mapModel.removeSubIdea('wall');
         delete(nodes[node_id]);
