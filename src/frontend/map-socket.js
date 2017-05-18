@@ -14,7 +14,8 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         globalLock=true,
         callbacks=[];
     var node_counter = 0,
-        last_created_node;
+        last_created_node,
+        last_question=0;
     var self=this;
     
     var nodeIdx=function(v) {
@@ -32,22 +33,23 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     socket.on('examination',function(examination) {
         
         console.log(examination);
-        var map={id: 'root', formatVersion: 3, ideas: {}};
+        var map={id: 'root', formatVersion: 3, ideas: {}, links:[]};
           
-        const join_ideas = function (src,dst,table,sub,notitlefun) {
+        const join_ideas = function (src,dst,table,sub,notitlefun,everyrecfun) {
             if (src.length==0) return;
             if (typeof(dst.ideas)=='undefined') dst.ideas={};
             
             for (var i=0; i<src.length; i++) {
                 node_counter++;
                 nodes[node_counter]=[eid,table,src[i].id];
+                if (everyrecfun) everyrecfun(src[i],node_counter,table);
                 var title=src[i].title!=null?src[i].title:notitlefun(src[i]);
 
                 dst.ideas[node_counter]={id:node_counter,title:title};
                 if (src[i].attr!=null) dst.ideas[node_counter].attr=src[i].attr;
                     
                 if (sub && typeof(src[i][sub])!='undefined')
-                    join_ideas(src[i][sub],dst.ideas[node_counter],table,sub,notitlefun);
+                    join_ideas(src[i][sub],dst.ideas[node_counter],table,sub,notitlefun,everyrecfun);
             }
         }
         
@@ -63,10 +65,15 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         
         join_ideas(examination.questions,map.ideas[1],'question','questions',function(r){
             return '???';
+        },function(r,node_id,table){
+            if (r.remedy==null) return;
+            map.links.push({ideaIdFrom: node_id, ideaIdTo:nodeIdx([eid,'remedy',r.remedy])});
         });
         
-     
+        
+        
         container.removeClass('loader');
+        //console.log(map);return;
         mapModel.setIdea(content(map));
         globalLock=false;
     });
@@ -188,7 +195,27 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             if (node.title!=null) {
                 params={title:node.title};
             }
+            
+            
+            if (last_question>0) {
+                
+                var checkIfTitleEnered = function() {
+                    if (typeof(nodes[node.id])=='undefined') return;
+                    if(mapModel.getIdea().findSubIdeaById(node.id).title.length==0) {
+                        setTimeout(checkIfTitleEnered,200);
+                        return;
+                    }
+                    mapModel.addLink('socket',last_question);
+                    var remedy=nodes[node.id];
+                    socket.emit('node',nodes[last_question],{remedy:remedy[2]});
+                    
+                };
+                setTimeout(checkIfTitleEnered,1000);
+                
+
+            }
             createNode(node.id,'remedy',params);
+            
         });
         
     });
@@ -287,7 +314,17 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     });
     
     menuContainer.find('.imp').click(function(){
-        menuContainer.find('.updateStyle').val(jQuery(this).css('background-color'));
+        var style=mapModel.getIdea().getAttrById(mapModel.getSelectedNodeId(),'style');
+        if (!style) style={};
+        style.background=jQuery(this).css('background-color');
+        mapModel.getIdea().updateAttr(mapModel.getSelectedNodeId(),'style',style);
+        
+        const importance=parseInt(jQuery(this).text());
+        
+        socket.emit('node',nodes[mapModel.getSelectedNodeId()],{importance:importance});
     });
-    
+ 
+    menuContainer.find('.icon.insertRoot').click(function(){
+        last_question = mapModel.getSelectedNodeId();
+    });   
 }

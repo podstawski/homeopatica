@@ -96,11 +96,11 @@ var Model = function(opt,logger) {
                 break;
             };
             case 'fk': {
-                sql+='INT(6) UNSIGNED, ADD CONSTRAINT FOREIGN KEY ('+k+') REFERENCES '+k+'(id)';
+                sql+='INT(6) UNSIGNED, ADD CONSTRAINT FOREIGN KEY ('+k+') REFERENCES '+k+'(id) ON DELETE SET NULL ON UPDATE CASCADE';
                 break;
             };
             case 'fks': {
-                sql+='INT(6) UNSIGNED, ADD CONSTRAINT FOREIGN KEY ('+k+') REFERENCES '+opt.table+'(id)';  
+                sql+='INT(6) UNSIGNED, ADD CONSTRAINT FOREIGN KEY ('+k+') REFERENCES '+opt.table+'(id) ON DELETE SET NULL ON UPDATE CASCADE';  
                 break;
             };
             default:
