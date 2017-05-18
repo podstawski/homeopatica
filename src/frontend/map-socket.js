@@ -176,6 +176,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     mapModel.addEventListener('nodeAttrChanged', function(node){
         if (globalLock) return;
         if (typeof(nodes[node.id])=='undefined') return;
+        if (!lockWall('nodeAttrChanged','updateAttr',node.id,[nodes[node.id],node.attr])) return;
         socket.emit('node',nodes[node.id],{attr:node.attr});
     });
     mapModel.addEventListener('nodeTitleChanged', function(node){
@@ -185,6 +186,9 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         socket.emit('node',nodes[node.id],{title:node.title});
     });
 
+     
+   
+    
     mapModel.addEventListener('nodeCreated', function(node){
         if (globalLock) return;
         last_created_node=node.id;
@@ -208,6 +212,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
                     mapModel.addLink('socket',last_question);
                     var remedy=nodes[node.id];
                     socket.emit('node',nodes[last_question],{remedy:remedy[2]});
+                    wallLink(node.id,last_question);
                     
                 };
                 setTimeout(checkIfTitleEnered,1000);
@@ -238,7 +243,26 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         } else { //existing node
             if (nodes[fromto.to][1]=='remedy' || nodes[fromto.from][1]=='remedy') {
                 callbacks.push(function(){
-                    mapModel.undo('remedy');
+                    mapModel.undo('socket');
+                    
+                    let currentNode = mapModel.getSelectedNodeId();
+                    if (nodes[fromto.to][1]=='remedy' && nodes[fromto.from][1]=='question') {
+                        mapModel.selectNode(fromto.to,true);
+                        mapModel.addLink('socket',fromto.from);
+                        var remedy=nodes[fromto.to];
+                        socket.emit('node',nodes[fromto.from],{remedy:remedy[2]});
+                        wallLink(fromto.from,fromto.to);
+                    }
+                    if (nodes[fromto.to][1]=='question' && nodes[fromto.from][1]=='remedy') {
+                        mapModel.selectNode(fromto.from,true);
+                        mapModel.addLink('socket',fromto.to);
+                        var remedy=nodes[fromto.from];
+                        socket.emit('node',nodes[fromto.to],{remedy:remedy[2]});
+                        wallLink(fromto.from,fromto.to);
+                    }
+                    
+                    mapModel.selectNode(currentNode,true);
+                    
                 });
             } else {
                 var from=nodes[fromto.from];
@@ -247,8 +271,24 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             
             
         }
-         
+        
     });
+    
+    const wallLink = function(from,to) {
+        lockWall('linkCreated','linkCreated',from,[nodes[from],nodes[to]]);
+       
+    };
+    
+    self.linkCreated = function(node_id,dest) {
+        let currentNode = mapModel.getSelectedNodeId();
+
+        mapModel.selectNode(node_id,true);
+        dest_id=nodeIdx(dest);
+        if (dest_id>0) mapModel.addLink('socket',dest_id);
+        
+        mapModel.selectNode(currentNode,true);
+        
+    }
     
     self.removeNode = function(node_id) {
         let currentNode = mapModel.getSelectedNodeId();
@@ -302,6 +342,15 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         
         menuContainer.css({left:dx,top:dy}).fadeIn(900);
     });
+    
+    self.updateAttr = function (node_id,attr) {
+        
+        
+        for (var x in attr) {
+    
+            mapModel.getIdea().updateAttr(node_id,x,attr[x]);
+        }
+    }
     
     menuContainer.click(function(){
         jQuery(this).fadeOut(300,function(){
