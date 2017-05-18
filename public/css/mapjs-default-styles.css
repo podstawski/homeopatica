@@ -53,6 +53,30 @@ body {
 	margin: 5px 2px;
 }
 
+.mapjs-context-menu .pot {
+	width:21%;
+	height: 20px;
+	border-radius: 50%;
+	display: inline-block;
+	cursor: pointer;
+	text-align: center;
+	font-family: Arial;
+	font-size: 11px;
+	padding-top: 7px;
+	margin: 5px 2px;
+}
+
+.mapjs-context-menu .pot.w {
+	color: white;
+}
+.mapjs-context-menu .pot.b {
+	color: black;
+}
+
+.mapjs-context-menu .active {
+	border: 2px solid #fff;
+}
+
 .mapjs-context-menu .icon.addSubIdea {
 	background-image: url('add.svg');
 }
@@ -96,10 +120,14 @@ body {
 .mapjs-context-menu.examination .icon.removeSubIdea,
 .mapjs-context-menu.examination .icon.copy,
 .mapjs-context-menu.examination .icon.insertRoot,
+.mapjs-context-menu.examination .imp,
+.mapjs-context-menu.examination .pot,
 .mapjs-context-menu.remedy .icon.addSubIdea,
 .mapjs-context-menu.remedy .icon.insertRoot,
 .mapjs-context-menu.remedy .icon.copy,
-.mapjs-context-menu.remedy .icon.paste
+.mapjs-context-menu.remedy .icon.paste,
+.mapjs-context-menu.remedy .imp,
+.mapjs-context-menu.question .pot
 {
 	display: none;
 }

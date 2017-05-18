@@ -59,7 +59,7 @@ module.exports.default =  {
 	},
 	{
 		'name': 'level_1',
-		'backgroundColor': '#22AAE0'
+		'backgroundColor': '#DDD'
 	},
 	{
 		'name': 'activated',

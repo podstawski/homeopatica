@@ -8,6 +8,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     
     if (eid==0) return;
     var nodes={},
+        nodes_full={},
         locks={},
         walls=[],
         newnodes={},
@@ -15,7 +16,8 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         callbacks=[];
     var node_counter = 0,
         last_created_node,
-        last_question=0;
+        last_question=0,
+        last_xy=[0,0];
     var self=this;
     
     var nodeIdx=function(v) {
@@ -32,7 +34,6 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     
     socket.on('examination',function(examination) {
         
-        console.log(examination);
         var map={id: 'root', formatVersion: 3, ideas: {}, links:[]};
           
         const join_ideas = function (src,dst,table,sub,notitlefun,everyrecfun) {
@@ -43,6 +44,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
                 node_counter++;
                 nodes[node_counter]=[eid,table,src[i].id];
                 if (everyrecfun) everyrecfun(src[i],node_counter,table);
+                nodes_full[node_counter] = {t:table,d:src[i]};
                 var title=src[i].title!=null?src[i].title:notitlefun(src[i]);
 
                 dst.ideas[node_counter]={id:node_counter,title:title};
@@ -177,6 +179,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (globalLock) return;
         if (typeof(nodes[node.id])=='undefined') return;
         if (!lockWall('nodeAttrChanged','updateAttr',node.id,[nodes[node.id],node.attr])) return;
+        
         socket.emit('node',nodes[node.id],{attr:node.attr});
     });
     mapModel.addEventListener('nodeTitleChanged', function(node){
@@ -217,6 +220,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
                 };
                 setTimeout(checkIfTitleEnered,1000);
                 
+                mapModel.getIdea().updateAttr(node.id,'position',last_xy);
 
             }
             createNode(node.id,'remedy',params);
@@ -307,7 +311,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             globalLock=true;
             callbacks.push(function() {
                 mapModel.undo('root no');
-                console.log('undo remove done',globalLock);
+                
                 globalLock=false;
                 
             });
@@ -339,6 +343,18 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (dy+ch+30 > bh) dy=bh-ch-30;
         
         menuContainer.addClass(nodes[node_id][1]);
+        if (typeof(nodes_full[node_id].d.importance)!='undefined') {
+            menuContainer.find('.imp:contains('+nodes_full[node_id].d.importance+')').addClass('active');
+        }
+        if (typeof(nodes_full[node_id].d.potency)!='undefined') {
+            menuContainer.find('.pot:contains('+nodes_full[node_id].d.potency+')').addClass('active');
+        }
+        
+        last_xy=[x-bw/2,y-bh/2,1];
+        if (last_xy[0]>0) last_xy[0]+=40;
+        else last_xy[0]-=40;
+        //console.log(last_xy,x,y,bw,bh);
+        
         
         menuContainer.css({left:dx,top:dy}).fadeIn(900);
     });
@@ -358,22 +374,31 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             menuContainer.removeClass('remedy');
             menuContainer.removeClass('question');
             
-            
+            menuContainer.find('.active').removeClass('active');
         });
     });
     
-    menuContainer.find('.imp').click(function(){
+    menuContainer.find('.imp,.pot').click(function(){
         var style=mapModel.getIdea().getAttrById(mapModel.getSelectedNodeId(),'style');
         if (!style) style={};
         style.background=jQuery(this).css('background-color');
         mapModel.getIdea().updateAttr(mapModel.getSelectedNodeId(),'style',style);
         
-        const importance=parseInt(jQuery(this).text());
+        const attr=jQuery(this).text();
+        var val={};
+        if (jQuery(this).hasClass('imp')) {
+            val.importance=parseInt(attr);
+            nodes_full[mapModel.getSelectedNodeId()].d.importance=val.importance;
+        }
+        if (jQuery(this).hasClass('pot')) {
+            val.potency=attr;
+            nodes_full[mapModel.getSelectedNodeId()].d.potency=val.potency;
+        }
         
-        socket.emit('node',nodes[mapModel.getSelectedNodeId()],{importance:importance});
+        socket.emit('node',nodes[mapModel.getSelectedNodeId()],val);
     });
  
-    menuContainer.find('.icon.insertRoot').click(function(){
+    menuContainer.find('.icon.insertRoot').click(function(e){
         last_question = mapModel.getSelectedNodeId();
     });   
 }

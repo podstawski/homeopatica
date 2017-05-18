@@ -118,6 +118,7 @@ module.exports = function (database,socket,sockets,session) {
     
     var node = function(node,obj) {
         
+        if (node==null) return;
         if (node[0]!=examination_id) return;
         
         database.t(node[1]).init(function(){
