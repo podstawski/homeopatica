@@ -1,8 +1,17 @@
 const   content = require('mindmup-mapjs-model').content,
         jQuery = require('jquery'),
-        moment = require('moment');
+        moment = require('moment'),
+        flatpickr = require("flatpickr");
 
+var flatpickr_locales={};
 
+const flatpickr_req= require.context("flatpickr/dist/l10n",true,/^.*\.js$/);
+flatpickr_req.keys().forEach(function(key){
+    flatpickr_locales[key.substr(2,2)] = flatpickr_req(key);
+});
+
+require("../../node_modules/flatpickr/dist/flatpickr.min.css");
+//require("./node_modules/flatpickr/dist/flatpickr.dark.min.css");
 
 module.exports = function (mapModel,socket,eid,container,menuContainer) {
     
@@ -17,10 +26,29 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     var node_counter = 0,
         last_created_node,
         last_question=0,
+        menu_datetime,
+        menu_node,
         last_xy=[0,0];
     var self=this;
     
-    var nodeIdx=function(v) {
+    moment.locale(navigator.language);
+    
+    var flatpickr_opt={
+        enableTime: true,
+        time_24hr: true,
+        onChange: function(selectedDates, dateStr, instance) {
+            menu_datetime=selectedDates;
+        }
+    };
+    if (typeof(flatpickr_locales[navigator.language])!='undefined') {
+        flatpickr_opt.locale=flatpickr_locales[navigator.language][navigator.language];
+    }
+    
+    var datepicker=new flatpickr(document.getElementById('context-menu-date'),flatpickr_opt);
+    
+    datepicker.setDate('2017-05-05');
+    
+    const nodeIdx=function(v) {
 
         for (var x in nodes) {
             if (JSON.stringify(nodes[x])==JSON.stringify(v)) {
@@ -29,6 +57,11 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         }        
         return -1;
     }
+    
+    const pill_icon = function() {
+        return {url:'/css/pills-bw.svg',width:20, height:20, position:'left'};
+    }
+    
     
     socket.emit('examination',eid);
     
@@ -56,12 +89,14 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         }
         
         join_ideas([examination.examination],map,'examination',null,function(r){
-            return moment(r.date).format('DD-MM-YYYY');
+            return moment(r.date).format('DD MMM YYYY');
         });
         
         
         join_ideas(examination.remedies,map,'remedy',null,function(r){
             return '???';
+        },function(r,node_id,table){
+            r.attr.icon=pill_icon();
         });
         
         
@@ -85,8 +120,9 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         
         var idx=nodeIdx(w[2][0]);
         //if (idx==-1) return;
+        
+        
         w[2][0]=idx;
-
 
         if (typeof(self[w[1]])=='function') {
             locks[w[0]]=idx;
@@ -113,18 +149,22 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     socket.on('pass',wall);
     
     const lockWall=function(lockName,wallName,id,params) {
+        
         if (typeof(locks[lockName])!='undefined' && locks[lockName]==id) return false;
         walls.push([lockName,wallName,params]);
         return true;
     }
     
     
-    self.nodeCreate = function(x,table,params,id) {   
+    self.nodeCreate = function(x,table,params,data) {   
         let currentNode = mapModel.getSelectedNodeId();
      
         if (table=='remedy') {
+            
             mapModel.insertRoot('socket',params.title?params.title:null);
-            nodes[last_created_node]=[eid,table,id];
+            nodes[last_created_node]=[eid,table,data.id];
+            nodes_full[last_created_node]={t:table,d:data};
+            
         }
         if (table=='question') {
             var parentId=1;
@@ -132,13 +172,15 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
                 parentId=Math.abs(nodeIdx([eid,table,params.parent]));
             }
             mapModel.addSubIdea('socket',parentId,params.title?params.title:null);
-            nodes[last_created_node]=[eid,table,id];
+            nodes[last_created_node]=[eid,table,data.id];
+            nodes_full[last_created_node]={t:table,d:data};
         }
         
         mapModel.selectNode(currentNode,true);
     }
     
     const createNode = function (node_id,table,params) {
+        
         if (typeof(newnodes[node_id])=='undefined') return;
         
         if (params==null) params={};
@@ -149,15 +191,17 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             params.attr=newnodes[node_id].attr;
         }
         delete(newnodes[node_id]);
-        if (!lockWall('createNode','nodeCreate',-1,[[0,table,0],table,params,0])) return;
+        if (!lockWall('createNode','nodeCreate',-1,[[0,table,0],table,params,{}])) return;
         
      
         socket.emit('node',[eid,table,0],params);
-        socket.once('newnode',function(id){
-            nodes[node_id]=[eid,table,id];
+        socket.once('newnode',function(data){
+            nodes[node_id]=[eid,table,data.id];
+            nodes_full[node_id]={t:table,d:data};
+            if (table=='remedy') mapModel.getIdea().updateAttr(node_id,'icon',pill_icon());
             for (var i=0; i<walls.length; i++) {
                 if (walls[i][0]=='createNode') {
-                    walls[i][2][3]=id;
+                    walls[i][2][3]=data;
                     break;
                 }
             }
@@ -178,11 +222,18 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     mapModel.addEventListener('nodeAttrChanged', function(node){
         if (globalLock) return;
         if (typeof(nodes[node.id])=='undefined') return;
+        
+        if (typeof(node.attr)=='undefined' ) node.attr={};
+        if (typeof(node.attr.position)=='undefined' ) node.attr.position=[node.x,node.y];
+        
         if (!lockWall('nodeAttrChanged','updateAttr',node.id,[nodes[node.id],node.attr])) return;
+        
+        
         
         socket.emit('node',nodes[node.id],{attr:node.attr});
     });
     mapModel.addEventListener('nodeTitleChanged', function(node){
+        
         if (globalLock) return;
         if (typeof(nodes[node.id])=='undefined') return;
         if (!lockWall('nodeTitleChanged','updateTitle',node.id,[nodes[node.id],node.title,false])) return;
@@ -310,7 +361,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (node.id==1) {
             globalLock=true;
             callbacks.push(function() {
-                mapModel.undo('root no');
+                mapModel.undo('socket');
                 
                 globalLock=false;
                 
@@ -326,7 +377,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     mapModel.addEventListener('nodeRemoved', nodeRemoved);
     
     mapModel.addEventListener('contextMenuRequested',function(node_id,x,y){
-        
+
         const   bw=jQuery('body').width(),
                 bh=jQuery('body').height(),
                 cw=menuContainer.width(),
@@ -343,6 +394,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (dy+ch+30 > bh) dy=bh-ch-30;
         
         menuContainer.addClass(nodes[node_id][1]);
+        
         if (typeof(nodes_full[node_id].d.importance)!='undefined') {
             menuContainer.find('.imp:contains('+nodes_full[node_id].d.importance+')').addClass('active');
         }
@@ -350,13 +402,19 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             menuContainer.find('.pot:contains('+nodes_full[node_id].d.potency+')').addClass('active');
         }
         
+        
+        
         last_xy=[x-bw/2,y-bh/2,1];
         if (last_xy[0]>0) last_xy[0]+=40;
         else last_xy[0]-=40;
         //console.log(last_xy,x,y,bw,bh);
         
-        
+        datepicker.setDate(nodes_full[node_id].d.date);
+        menuContainer.find('input.date').val(moment(nodes_full[node_id].d.date).format('DD MMM YYYY, HH:mm'));
         menuContainer.css({left:dx,top:dy}).fadeIn(900);
+        menu_datetime=null;
+        menu_node=node_id;
+
     });
     
     self.updateAttr = function (node_id,attr) {
@@ -368,6 +426,11 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         }
     }
     
+    self.dateChanged = function(node_id,date) {
+        if (typeof(nodes_full[node_id])=='undefined') return;
+        nodes_full[node_id].d.date = date;
+    };
+    
     menuContainer.click(function(){
         jQuery(this).fadeOut(300,function(){
             menuContainer.removeClass('examination');
@@ -375,7 +438,17 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             menuContainer.removeClass('question');
             
             menuContainer.find('.active').removeClass('active');
+            
+            if (menu_datetime!=null) {
+                nodes_full[menu_node].d.date = new Date(menu_datetime[0]).getTime();
+                lockWall('dateChanged','dateChanged',menu_node,[nodes[menu_node],nodes_full[menu_node].d.date])
+                socket.emit('node',nodes[menu_node],{date:nodes_full[menu_node].d.date});                                
+            }
         });
+    });
+    
+    menuContainer.find('input.date').click(function(e){
+        e.stopPropagation();
     });
     
     menuContainer.find('.imp,.pot').click(function(){

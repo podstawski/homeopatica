@@ -6,5 +6,11 @@ module.exports = {
 	output: {
 		filename: '[name].js',
 		path: path.resolve(__dirname, 'public/site/')
+	},
+	module: {
+		loaders: [{
+			test: /\.css$/,
+			loader: "style-loader!css-loader"
+		}]
 	}
 };

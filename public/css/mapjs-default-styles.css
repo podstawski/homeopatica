@@ -115,13 +115,23 @@ body {
 	border-color: #00a000;
 }
 
-
+.mapjs-context-menu .date {
+	font-family: Arial;
+	font-size:12px;
+	color: #fff;
+	background-color: transparent;
+	margin-top: 5px;
+	margin-left: 4px;
+	border: 0;
+	outline: none;
+}
 
 .mapjs-context-menu.examination .icon.removeSubIdea,
 .mapjs-context-menu.examination .icon.copy,
 .mapjs-context-menu.examination .icon.insertRoot,
 .mapjs-context-menu.examination .imp,
 .mapjs-context-menu.examination .pot,
+.mapjs-context-menu.examination .separator.s1,
 .mapjs-context-menu.remedy .icon.addSubIdea,
 .mapjs-context-menu.remedy .icon.insertRoot,
 .mapjs-context-menu.remedy .icon.copy,

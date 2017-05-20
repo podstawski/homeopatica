@@ -58,6 +58,7 @@ module.exports = function (database,socket,sockets,session) {
             question.select([{examination: id, parent:parent}],null,function(data){
                 
                 for (var i=0; i<data.recordsTotal; i++) {
+                    data.data[i].date-=time_delta;
                     questions.push(data.data[i]);
                     data.data[i].questions=[];
                     get_questions(data.data[i].id, data.data[i].questions);
@@ -73,6 +74,7 @@ module.exports = function (database,socket,sockets,session) {
             examination_map_counter++;
             remedy.select([{examination: id}],null,function(data){
                 for (var i=0; i<data.recordsTotal; i++) {
+                    data.data[i].date-=time_delta;
                     remedies.push(data.data[i]);
                 }
                 examination_map_counter--;
@@ -126,9 +128,9 @@ module.exports = function (database,socket,sockets,session) {
             if (node[2]==0) { // new record
                 if (obj==null) obj={};
                 if (node[1]!='examination') obj.examination=examination_id;
-                
+                if (typeof(obj.date)=='undefined') obj.date=Date.now();
                 database.t(node[1]).add(obj,function(d){
-                     socket.emit('newnode',d.id);
+                     socket.emit('newnode',d);
                      socket.emit('pass',genPass());
                 });
                 
@@ -137,6 +139,7 @@ module.exports = function (database,socket,sockets,session) {
                 if (obj==null) { //remove
                     database.t(node[1]).remove(node[2]);
                 } else {
+                    if (typeof(obj.date)!='undefined') obj.date+=time_delta;
                     database.t(node[1]).set(obj,node[2]);
                 }
                 socket.emit('pass',genPass());
@@ -150,8 +153,15 @@ module.exports = function (database,socket,sockets,session) {
     
     var echo = function(pass,w) {
         if (typeof(passwords[pass])=='undefined') return;
-        if (Date.now() - passwords[pass]>5000) return;
-        delete(passwords[pass]);
+        if (Date.now() - passwords[pass]>5000) {
+            delete(passwords[pass]);
+            return;
+        }
+        setTimeout(function(){
+            if (typeof(passwords[pass])=='undefined') return;
+            delete(passwords[pass]);
+        },2000);
+       
         wall(w);
     }
     
