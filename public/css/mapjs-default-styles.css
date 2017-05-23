@@ -31,12 +31,12 @@ body {
 }
 
 .mapjs-context-menu .icon {
-	width:9%;
-	height: 24px;
+	width:13%;
+	height: 36px;
 	background-size: 100%;
 	background-repeat: no-repeat;
 	display: inline-block;
-	margin: 2px;
+	margin: 2.5px;
 	cursor: pointer;
 }
 

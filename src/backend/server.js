@@ -56,6 +56,7 @@ var Server = function(options,database,logger) {
     
     
     var httpServer=app.listen(options.port, function () {
+        logger.log('Application listening on port '+options.port)
     });
 
     var io=require('socket.io').listen(httpServer);
@@ -94,7 +95,7 @@ var Server = function(options,database,logger) {
                 }
             }  
         };
-        logger.log('Hi there :)');
+        logger.log('Ooooh we have a guest ;)');
         var map = new Map(database,httpSocket,httpClients,session[hash]);
         httpSocket.on('disconnect',disconnect);
     };

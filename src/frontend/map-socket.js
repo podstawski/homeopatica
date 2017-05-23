@@ -96,6 +96,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         join_ideas(examination.remedies,map,'remedy',null,function(r){
             return '???';
         },function(r,node_id,table){
+            if (r.attr==null) r.attr={};
             r.attr.icon=pill_icon();
         });
         
@@ -409,6 +410,8 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         else last_xy[0]-=40;
         //console.log(last_xy,x,y,bw,bh);
         
+        saveDate(); //if any was changed
+        
         datepicker.setDate(nodes_full[node_id].d.date);
         menuContainer.find('input.date').val(moment(nodes_full[node_id].d.date).format('DD MMM YYYY, HH:mm'));
         menuContainer.css({left:dx,top:dy}).fadeIn(900);
@@ -431,6 +434,15 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         nodes_full[node_id].d.date = date;
     };
     
+    const saveDate = function() {
+        if (menu_datetime!=null) {
+            nodes_full[menu_node].d.date = new Date(menu_datetime[0]).getTime();
+            lockWall('dateChanged','dateChanged',menu_node,[nodes[menu_node],nodes_full[menu_node].d.date])
+            socket.emit('node',nodes[menu_node],{date:nodes_full[menu_node].d.date});                                
+            menu_datetime=null;
+        }    
+    }
+    
     menuContainer.click(function(){
         jQuery(this).fadeOut(300,function(){
             menuContainer.removeClass('examination');
@@ -439,11 +451,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             
             menuContainer.find('.active').removeClass('active');
             
-            if (menu_datetime!=null) {
-                nodes_full[menu_node].d.date = new Date(menu_datetime[0]).getTime();
-                lockWall('dateChanged','dateChanged',menu_node,[nodes[menu_node],nodes_full[menu_node].d.date])
-                socket.emit('node',nodes[menu_node],{date:nodes_full[menu_node].d.date});                                
-            }
+            saveDate();
         });
     });
     

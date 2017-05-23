@@ -1,0 +1,8 @@
+
+module.exports = {
+    host:'your_mysql_host',
+    user:'homeopatica',
+    password:'blablabla',
+    database:'homeopatica',
+    listen_port: 3000
+}

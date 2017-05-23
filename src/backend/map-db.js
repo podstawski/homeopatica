@@ -16,7 +16,7 @@ module.exports = function (database,socket,sockets,session) {
     var time_delta=0;
     
     var time = function(t) {
-        time_delta=t-(new Date).getTime();
+        time_delta=Math.round((t-(new Date).getTime())/1800000)*1800000;
     };
     
     var passwords={};

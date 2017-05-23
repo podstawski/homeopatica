@@ -10,11 +10,11 @@ var Model = function(opt,logger) {
     
     if (logger==null) logger=console;
 
-    var connect = function (cb) {
+    var connect = function (cb,reconn) {
         var token=opt.host+':'+opt.database;
-        if (connection!=null) {
+        if (connection!=null && !reconn) {
             if(typeof(cb)=='function') cb();
-        } else if (connections[token]!==undefined){
+        } else if (connections[token]!==undefined && !reconn){
             connection=connections[token];
             if(typeof(cb)=='function') cb();
         } else {
@@ -375,7 +375,12 @@ var Model = function(opt,logger) {
         
         inited: function () {
             return inited;
+        },
+        
+        reconnect: function(cb) {
+            connect(cb,true);
         }
+        
  
     }
 }

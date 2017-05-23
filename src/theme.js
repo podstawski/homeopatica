@@ -59,7 +59,12 @@ module.exports.default =  {
 	},
 	{
 		'name': 'level_1',
-		'backgroundColor': '#DDD'
+		'backgroundColor': '#DDD',
+		'text': {
+			'font': {
+				'size': 12
+			}
+		}
 	},
 	{
 		'name': 'activated',
