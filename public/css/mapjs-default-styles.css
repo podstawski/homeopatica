@@ -16,6 +16,8 @@ body {
 	background-image: url('loader.gif');
 }
 
+
+
 .mapjs-context-menu {
 	position: absolute;
 	width:240px;
@@ -140,6 +142,95 @@ body {
 .mapjs-context-menu.question .pot
 {
 	display: none;
+}
+
+
+.doctor-panel {
+	position: absolute;
+	width: 300px;
+	z-index: 15;
+	background-color: rgba(0,0,0,0.5);
+	color: #fff;
+	height: 100%;
+	font-family: Verdana;
+	padding: 5px;
+	-webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;
+	left: -270px;
+}
+
+.doctor-panel.visible {
+	left: 0px;
+}
+
+.doctor-panel .patient_name {
+	font-size: 18px;
+	float: right;
+	width: 30px;
+	transform: rotate(-90deg);
+	-webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;	
+}
+
+.doctor-panel.visible .patient_name {
+	width: 100%;
+	transform: rotate(0);
+	float: none;
+}
+
+
+.doctor-panel .patient_age {
+	font-size: 18px;
+	float: right;
+	width: 30px;
+	transform: rotate(-90deg);
+	-webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    transition: all 1s ease;	
+}
+
+.doctor-panel.visible .patient_age {
+	width: 100%;
+	transform: rotate(0);
+	float: none;
+	font-size: 14px;
+}
+
+.doctor-panel .patient_history {
+	display: none;
+}
+
+.doctor-panel.visible .patient_history {
+	display: block;
+}
+
+.doctor-panel .patient_search {
+	display: none;
+}
+
+.doctor-panel .patient_search {
+	border: solid #fff;
+	border-width: 0 0 2px 0;
+	padding-bottom: 8px;
+}
+
+.doctor-panel.visible .patient_search  {
+	display: block;
+}
+
+.doctor-panel .patient_search input {
+	margin: 5px 0;
+	font-size: 20px;
+	width: 100%;
+	padding: 8px 15px;
+	border-radius: 25px;
+	border-color: #8f8;
+	outline: none;
 }
 
 .mapjs-node {

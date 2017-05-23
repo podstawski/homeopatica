@@ -4,5 +4,6 @@ module.exports = {
     user:'homeopatica',
     password:'blablabla',
     database:'homeopatica',
-    listen_port: 3000
+    listen_port: 3000,
+    locale_spreadsheet: '1fy8j_PCoSvt1DV0NrCsCZyALJV8u63y9eUGkzcs1DRY'
 }

@@ -30,8 +30,9 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         menu_node,
         last_xy=[0,0];
     var self=this;
+    var language = navigator.language || navigator.userLanguage;
     
-    moment.locale(navigator.language);
+    moment.locale(language);
     
     var flatpickr_opt={
         enableTime: true,
@@ -41,7 +42,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         }
     };
     if (typeof(flatpickr_locales[navigator.language])!='undefined') {
-        flatpickr_opt.locale=flatpickr_locales[navigator.language][navigator.language];
+        flatpickr_opt.locale=flatpickr_locales[language][language];
     }
     
     var datepicker=new flatpickr(document.getElementById('context-menu-date'),flatpickr_opt);

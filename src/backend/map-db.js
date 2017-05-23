@@ -24,6 +24,11 @@ module.exports = function (database,socket,sockets,session) {
     var genPass = function() {
         var hash=md5(Math.random()+'_'+Date.now());
         passwords[hash]=Date.now();
+        setTimeout(function(){
+            if (typeof(passwords[hash])!='undefined') {
+                delete(passwords[hash]);
+            }
+        },10000);
         return hash;
     }
   
