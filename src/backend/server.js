@@ -23,7 +23,7 @@ function md5(txt) {
 }
 
 
-var Server = function(options,database,logger) {
+var Server = function(options,database,mailer,logger) {
     var self=this;
     var app = express();
     var httpClients=[];

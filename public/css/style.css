@@ -1,26 +1,31 @@
-body.login {
+body.login,
+body.signup {
     background-color: #81c564;
     font-family: Verdana;
     font-size:1.2em;
 }
 
-.login .login-panel {
+.login .login-panel,
+.signup .signup-panel {
         
     background-color: #fff;
-    margin: 6% 30% ;
+    margin: 2em 30% ;
 }
 
-.login .login-panel .header {
+.login .login-panel .header,
+.signup .signup-panel .header {
     padding: 1.5em;
     background-color: #4ea1ff;
     color: #fff;
 }
 
-.login .login-panel .body {
+.login .login-panel .body,
+.signup .signup-panel .body {
     padding: 1.5em;
     
 }
-.login .login-panel .body input {
+.login .login-panel .body input,
+.signup .signup-panel .body input.text {
     width: 100%;
     margin: 0.5em 0;
     padding: 1em;
@@ -30,7 +35,43 @@ body.login {
     font-size: 1em;
 }
 
-.login .login-panel button {
+.signup .signup-panel .body .homeopath input {
+    display:none;
+}
+
+.signup .signup-panel .body .homeopath {
+    margin: 1em;
+}
+
+.signup .signup-panel .body .homeopath label.checkbox {
+    background-color: #e9ecee;
+    border: 1px solid #4ea1ff;
+    padding: 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+    border-radius: 0.8em;
+    display: inline-block;
+    position: relative;
+}
+
+.signup .signup-panel .body .homeopath input:checked+label:after {
+    content: '\2714';
+    font-size: 14px;
+    position: absolute;
+    top: 0px;
+    left: 3px;
+    color: #4ea1ff;
+    font-size: 28px;
+}
+
+.signup .signup-panel .body .homeopath label.translate {
+    position: relative;
+    top: -10px;
+    color: #444;
+}
+
+
+.login .login-panel button,
+.signup .signup-panel button{
     padding: 1em 2em;
     border-radius: 2em;
     border: 2px solid #4ea1ff;
@@ -41,10 +82,18 @@ body.login {
     color: #fff;
     cursor: pointer;
     font-weight: bold;
+    float: right;
 }
 
+.login .login-panel .body:after,
+.signup .signup-panel .body:after {
+    content: '';
+    display: block;
+    clear: both;
+}
 
-.login .login-panel .footer {
+.login .login-panel .footer,
+.signup .signup-panel .footer{
     padding: 1.5em;
     background-color: #4ea1ff;
     color: #fff;
@@ -53,12 +102,30 @@ body.login {
 
 .login .login-panel .footer .signup {
     float: right;
-    cursor: pointer;
 }
 
 
+.login .login-panel .footer a,
+.signup .signup-panel .footer a{
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.login .login-panel .footer a:hover,
+.signup .signup-panel .footer a:hover{
+    font-weight: bold;
+}
+
+
+
+
+
+
+
 @media (max-width: 500px) {
-	.login .login-panel {
-		margin: 5% 2%;
+	.login .login-panel,
+    .signup .signup-panel {
+		margin: 2em 1em;
 	}
 }

@@ -5,5 +5,12 @@ module.exports = {
     password:'blablabla',
     database:'homeopatica',
     listen_port: 3000,
-    locale_spreadsheet: '1fy8j_PCoSvt1DV0NrCsCZyALJV8u63y9eUGkzcs1DRY'
+    locale_spreadsheet: '1fy8j_PCoSvt1DV0NrCsCZyALJV8u63y9eUGkzcs1DRY',
+    nodemailer: {
+        service: 'gmail',
+        auth: {
+            user: 'gmail.user@gmail.com',
+            pass: 'yourpass'
+        }
+    }
 }

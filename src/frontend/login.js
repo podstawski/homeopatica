@@ -17,4 +17,5 @@ module.exports = function(socket) {
     });
     
     $('.login-panel .translate').translate();
+    document.title=$.translate(document.title);
 }
