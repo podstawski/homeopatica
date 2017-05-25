@@ -30,8 +30,11 @@ var Model = function(opt,logger) {
                 }
             });
             connection.on('error', function(err) {
-                logger.log(err);
-                connect(null,true);
+                logger.log('disconnected',err);
+                setTimeout(function(){
+                    connect(null,true);
+                },1000);
+                
             });
         }
     }

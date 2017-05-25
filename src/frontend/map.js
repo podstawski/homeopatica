@@ -33,5 +33,6 @@ module.exports = function(container_selector,theme_selector,menu_selector,socket
 		if (examination==0) mapModel.setIdea(idea);
 		
 		
+		jQuery(menu_selector+' .translate').translate();
 
 }

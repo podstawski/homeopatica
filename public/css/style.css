@@ -1,0 +1,64 @@
+body.login {
+    background-color: #81c564;
+    font-family: Verdana;
+    font-size:1.2em;
+}
+
+.login .login-panel {
+        
+    background-color: #fff;
+    margin: 6% 30% ;
+}
+
+.login .login-panel .header {
+    padding: 1.5em;
+    background-color: #4ea1ff;
+    color: #fff;
+}
+
+.login .login-panel .body {
+    padding: 1.5em;
+    
+}
+.login .login-panel .body input {
+    width: 100%;
+    margin: 0.5em 0;
+    padding: 1em;
+    border-radius: 2em;
+    border: 2px solid #4ea1ff;
+    outline: none;
+    font-size: 1em;
+}
+
+.login .login-panel button {
+    padding: 1em 2em;
+    border-radius: 2em;
+    border: 2px solid #4ea1ff;
+    font-size: 1em;
+    outline: none;
+    margin-top: 0.3em;
+    background-color: #e3530a;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+
+.login .login-panel .footer {
+    padding: 1.5em;
+    background-color: #4ea1ff;
+    color: #fff;
+    font-size: 0.7em;
+}
+
+.login .login-panel .footer .signup {
+    float: right;
+    cursor: pointer;
+}
+
+
+@media (max-width: 500px) {
+	.login .login-panel {
+		margin: 5% 2%;
+	}
+}

@@ -1,5 +1,6 @@
 
 const 	map=require('./frontend/map'),
+		login=require('./frontend/login'),
 		translator=require('./frontend/translate'),
 		doctor=require('./frontend/doctor-panel'),
 		socket_io = require('socket.io-client'),
@@ -17,11 +18,15 @@ const init = function () {
 	translator(jQuery);
 	
 	var loc=window.location+'';
-	var l=loc.match(/\/map\/([0-9]+)/);
-	if (l!=null) {
+	var m=loc.match(/\/map\/([0-9]+)/);
+	if (m!=null) {
 		doctor(socket);
         map('#container','#themecss','#context-menu',socket,parseInt(l[1]));
-    }
+    } else {
+		login(socket);
+	}
+	
+	
 	
 	
 }
