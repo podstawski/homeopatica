@@ -38,6 +38,15 @@ module.exports = function(socket) {
         
     });
     
+    
+    socket.on('signup',function(result){
+        switch (result) {
+            case 'email_exists':
+                toastr.error($.translate('Email exists'), $.translate('Signup error!'));
+                break;
+        }
+    });
+    
     $('.signup-panel .translate').translate();
     document.title=$.translate(document.title);
 }

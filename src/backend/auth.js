@@ -11,7 +11,7 @@ function email_std(e) {
 }
 
 
-module.exports = function (database,socket,sockets,session) {
+module.exports = function (database,socket,sockets,session,mailer) {
     var users=database.t('users'); 
    
   
@@ -20,13 +20,12 @@ module.exports = function (database,socket,sockets,session) {
         return hash;
     }
   
-    const signup = function(data) {
+    const signup = function(data,lang) {
         users.count([{email:email_std(data.email)}],function(c){
             if (c>0) {
                 socket.emit('signup','email_exists');
                 return;
             }
-            
             users.add({
                 email:email_std(data.email),
                 active:0,
@@ -36,8 +35,9 @@ module.exports = function (database,socket,sockets,session) {
                 date: Date.now()+3*24*3600*1000},
                 
                 function (r) {
-                    //code
-                });
+                    mailer.send('adduser',r,lang);
+                });            
+
         });
     }
     

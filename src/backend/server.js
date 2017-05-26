@@ -97,8 +97,8 @@ var Server = function(options,database,mailer,logger) {
             }  
         };
         logger.log('Ooooh we have a guest ;)');
-        var map = new Map(database,httpSocket,httpClients,session[hash]);
-        var auth = new Auth(database,httpSocket,httpClients,session[hash]);
+        var map = new Map(database,httpSocket,httpClients,session[hash],mailer);
+        var auth = new Auth(database,httpSocket,httpClients,session[hash],mailer);
         httpSocket.on('disconnect',disconnect);
     };
     

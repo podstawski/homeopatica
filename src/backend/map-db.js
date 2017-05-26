@@ -7,7 +7,7 @@ function md5(txt) {
 }
 
 
-module.exports = function (database,socket,sockets,session) {
+module.exports = function (database,socket,sockets,session,mailer) {
     var examination=database.t('examination'); 
     var question=database.t('question');
     var remedy=database.t('remedy');
