@@ -5,6 +5,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const Map = require('./map-db.js');
+const Auth = require('./auth.js');
 const crypto = require('crypto');
 
 function parseCookies (rc) {
@@ -97,6 +98,7 @@ var Server = function(options,database,mailer,logger) {
         };
         logger.log('Ooooh we have a guest ;)');
         var map = new Map(database,httpSocket,httpClients,session[hash]);
+        var auth = new Auth(database,httpSocket,httpClients,session[hash]);
         httpSocket.on('disconnect',disconnect);
     };
     
