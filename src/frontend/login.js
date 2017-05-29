@@ -11,9 +11,20 @@ module.exports = function(socket) {
         
         if (email.length==0 || pass.length==0) {
             toastr.error($.translate('Please submit login'), $.translate('Login error!'));
-            
+            return;
         }
+        socket.emit('signin',email,pass);
         
+    });
+    
+    socket.on('signin',function(redir){
+        if (!redir) {
+            toastr.error($.translate('Email or password incorrect'), $.translate('Login error!'));
+        } else {
+            $('body').fadeOut(750,function(){
+                location.href=redir;
+            });
+        }
     });
     
     $('.login-panel .translate').translate();

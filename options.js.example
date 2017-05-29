@@ -12,5 +12,6 @@ module.exports = {
             user: 'gmail.user@gmail.com',
             pass: 'yourpass'
         }
-    }
+    },
+    root: 'http://foo.bar.com'
 }

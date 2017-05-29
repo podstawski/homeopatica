@@ -3,7 +3,7 @@ const   nodemailer = require('nodemailer'),
         smekta = require('./smekta.js');
 
 module.exports = function(options) {
-    var transport = nodemailer.createTransport(options.nodemailer);
+    var transporter = nodemailer.createTransport(options.nodemailer);
     
     const send = function(action,data,lang) {
         var header = require(__dirname+'/../mailer/default.js');
@@ -17,7 +17,35 @@ module.exports = function(options) {
         }
         delete(header.locale);
         
-        console.log(header,data,lang);
+        
+        var after_read_file=function(html) {
+            header.html=smekta(html.toString('UTF8'),data);
+            
+            transporter.sendMail(header, (error, info) => {
+                if (error) {
+                    return console.log(error);
+                }
+                console.log('Message %s sent: %s', info.messageId, info.response);
+            });
+            
+        }
+        
+ 
+        for (var k in header) header[k]=smekta(header[k],data);
+  
+        fs.readFile(__dirname+'/../mailer/'+action+'_'+lang+'.html',function(err,html){
+            if (!err) {
+                after_read_file(html);
+                return;
+            }
+            fs.readFile(__dirname+'/../mailer/'+action+'.html',function(err,html){
+                if (!err) {
+                    after_read_file(html);
+                    return;
+                }
+                console.log('No mail file for action',action);
+            });
+        });
     }
     
     return {

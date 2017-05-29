@@ -39,10 +39,42 @@ module.exports = function (database,socket,sockets,session,mailer) {
                 });            
 
         });
+    };
+    
+    const signin = function(email,pass) {
+        users.select([{email:email_std(email)}],null,function(data){
+            if (data.recordsTotal==0 || data.data[0].password!=md5(pass.trim())) {
+                socket.emit('signin',null);
+                return;
+            }
+            session.user=data.data[0];
+            
+            socket.emit('signin',(data.data[0].doctor==1)?'/doctor/':'/patient/');
+        });
+    };
+    
+    
+    if (socket) {
+        socket.on('signup',signup);
+        socket.on('signin',signin);
     }
     
     
-    
-    socket.on('signup',signup);
-    
+    return {
+        'signupcode': function(user_id,hash,response,cb) {
+            users.get(user_id,function(user) {
+                if(user==null || user.hash!=hash){
+                    response.redirect(302, '/');
+                    if (cb) cb();
+                    return;
+                }
+                response.redirect(302, (user.doctor==1)?'/doctor/':'/patient/');
+                users.set({active:1, hash:null},user_id,function(u){
+                    session.user=u;
+                    cb();
+                });
+                
+            })
+        }
+    }
 }

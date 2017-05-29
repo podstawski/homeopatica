@@ -35,8 +35,38 @@ var Server = function(options,database,mailer,logger) {
 
     app.use(express.static(options.public_path));
     
+    
+    var initSession = function(cookies,setcookie) {
+  
+        if (typeof(cookies.sessid)!='undefined') {
+            var hash=cookies.sessid;
+        } else {
+            var hash=md5(Math.random()+'_'+Date.now());
+            setcookie(hash);
+        }
+        
+        if (typeof(session[hash])=='undefined') {
+            session[hash]={};
+        }
+        session[hash].hb=Date.now();
+        return hash;
+    }
+    
     var get=function (request, response) {
 
+        var su=request.url.match(/\/signupcode\/([0-9a-f]+)-([0-9]+)/);
+        if (su!=null) {
+            var cookies=parseCookies(request.headers.cookie);
+            var hash=initSession(cookies,function(hash){
+                response.cookie('sessid',hash,{path:'/'});
+            });           
+            new Auth(database,null,null,session[hash],mailer).signupcode(parseInt(su[2]),su[1],response,function(){
+                response.end();
+            });
+            return;
+        }
+    
+    
         var getContents = function(url) {
             url=path.dirname(url);
             
@@ -70,21 +100,12 @@ var Server = function(options,database,mailer,logger) {
     var connection = function(httpSocket) {
         var cookies=parseCookies(httpSocket.handshake.headers.cookie);
         
-        if (typeof(cookies.sessid)!='undefined') {
-            var hash=cookies.sessid;
-        } else {
-            var hash=md5(Math.random()+'_'+Date.now());
+        var hash=initSession(cookies,function(hash){
             httpSocket.emit('cookie','sessid',hash);
-        }
-        
-        if (typeof(session[hash])=='undefined') {
-            session[hash]={};
-        }
+        });
         
         session[hash].socket=httpSocket;
-        session[hash].hb=Date.now();
-        
-        
+
         httpClients.push({socket:httpSocket,session:session[hash]});
         
         var disconnect = function() {
