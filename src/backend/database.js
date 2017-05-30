@@ -20,7 +20,6 @@ var DB = function(opt,cb) {
     
     const hb = function() {
         tables.users.count(null,function(data){
-            if (data!=0) console.log('interval',data);
         });
     }
     
