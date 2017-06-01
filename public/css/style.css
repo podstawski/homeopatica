@@ -119,8 +119,28 @@ body.signup {
 
 
 
+body.doctor {
+    background-image: url('hheader.jpg');
+    background-repeat: repeat-x;
+    background-position: center -100px;
+    font-family: Tahoma;
+}
 
+.doctor .dataTables_wrapper {
+    margin-top: 130px;
+}
 
+.doctor div.plus {
+    background-image: url('plus.svg');
+    background-repeat: no-repeat;
+    background-size: 100%;
+    width:50px;
+    height: 50px;
+    position: fixed;
+    bottom:20px;
+    right: 30px;
+    cursor: pointer;
+}
 
 
 @media (max-width: 500px) {
@@ -128,4 +148,13 @@ body.signup {
     .signup .signup-panel {
 		margin: 2em 1em;
 	}
+    body.doctor {
+        background-position: center -200px;
+    }
+}
+
+@media (max-width: 1400px) {
+    body.doctor {
+        background-position: center -150px;
+    }
 }

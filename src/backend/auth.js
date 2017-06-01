@@ -47,6 +47,11 @@ module.exports = function (database,socket,sockets,session,mailer) {
                 socket.emit('signin',null);
                 return;
             }
+            
+            if (data.data[0].active!=1) {
+                socket.emit('signin',false);
+                return;
+            }
             session.user=data.data[0];
             
             socket.emit('signin',(data.data[0].doctor==1)?'/doctor/':'/patient/');

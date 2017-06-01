@@ -13,17 +13,22 @@
   "devDependencies": {
     "css-loader": "^0.28.1",
     "exports-loader": "^0.6.3",
+    "file-loader": "^0.11.1",
+    "image-webpack-loader": "^3.3.1",
     "imports-loader": "^0.7.0",
     "style-loader": "^0.17.0",
     "webpack": "^2.2.1"
   },
   "dependencies": {
+    "datatables.net": "^1.10.15",
+    "datatables.net-dt": "^1.10.15",
     "express": "^4.15.2",
     "flatpickr": "^2.6.1",
     "mindmup-mapjs": "^2.0.3",
     "moment": "^2.18.1",
     "mysql": "^2.13.0",
     "nodemailer": "^4.0.1",
+    "select2": "^4.0.3",
     "socket.io": "^2.0.1",
     "toastr": "^2.1.2"
   }

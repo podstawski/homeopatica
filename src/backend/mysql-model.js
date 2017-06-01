@@ -118,9 +118,9 @@ var Model = function(opt,logger) {
     
     var checkFields = function (d,cb) {
         var sql='';
-    
-        
+
         for (var k in d) {
+            if (k.indexOf('.')>0) continue;
             if (typeof(_fields[k])=='undefined') {
                 sql+=addFieldSql(k,d[k])+',';
             }
@@ -204,6 +204,41 @@ var Model = function(opt,logger) {
         
     };
 
+    var select=function (where,order,cb,ctx,leftjoin) {
+        var sql="SELECT * FROM "+opt.table;
+        if (leftjoin) {
+            var lj='';
+            for ( var t in leftjoin) {
+                if (lj.length>0) lj+=',';
+                lj+=t+' ON '+opt.table+'.'+leftjoin[t]+'='+t+'.id';
+            }
+            sql+=' LEFT JOIN '+lj;
+        }
+        var orderby='';
+        if (order) orderby=' ORDER BY '+order.join(',');
+        
+        if (where) {
+            
+            where2whereObj(where,function(obj){
+                sql+=' WHERE '+obj.where;
+                
+                //console.log(sql,obj.values);
+                connection.query(sql+orderby,obj.values,function(err, rows) {
+                    
+                    if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
+                    else {
+                        console.log(err);
+                        cb({recordsTotal:0,data:[],ctx:ctx});
+                    }
+                });
+            });
+        } else {
+             connection.query(sql+orderby,function(err, rows) {
+                if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
+                else cb({recordsTotal:0,data:[],ctx:ctx});
+            });
+        }
+    }
 
     
     return {
@@ -257,28 +292,11 @@ var Model = function(opt,logger) {
             return getOne(idx,cb);
         },
         
-        select: function (where,order,cb,ctx) {
-            var sql="SELECT * FROM "+opt.table;
-            var orderby='';
-            if (order) orderby=' ORDER BY '+order.join(',');
-            
-            if (where) {
-                
-                where2whereObj(where,function(obj){
-                    sql+=' WHERE '+obj.where;
-                    
-                    //console.log(sql);
-                    connection.query(sql+orderby,obj.values,function(err, rows) {
-                        if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
-                        else cb({recordsTotal:0,data:[],ctx:ctx});
-                    });
-                });
-            } else {
-                 connection.query(sql+orderby,function(err, rows) {
-                    if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
-                    else cb({recordsTotal:0,data:[],ctx:ctx});
-                });
-            }
+        
+        select: select,
+        
+        leftjoin: function(tables,where,order,cb,ctx) {
+            select(where,order,cb,ctx,tables);
         },
         
         set: function(d,idx,cb) {
@@ -311,6 +329,10 @@ var Model = function(opt,logger) {
         },
         
         count: function(where,cb) {
+            if (!connection) {
+                cb(null);
+                return;
+            }
             var sql="SELECT count(*) AS c FROM "+opt.table;
             if (where) {
                 where2whereObj(where,function(obj){

@@ -5,6 +5,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const Map = require('./map-db.js');
+const Doctor = require('./doctor-db.js');
 const Auth = require('./auth.js');
 const crypto = require('crypto');
 
@@ -120,6 +121,11 @@ var Server = function(options,database,mailer,logger) {
         logger.log('Ooooh we have a guest ;)');
         var map = new Map(database,httpSocket,httpClients,session[hash],mailer);
         var auth = new Auth(database,httpSocket,httpClients,session[hash],mailer);
+        
+        if (typeof(session[hash].user)!='undefined' && typeof(session[hash].user.doctor)!='undefined') {
+            var doctor = new Doctor(database,httpSocket,httpClients,session[hash],mailer);
+        }
+        
         httpSocket.on('disconnect',disconnect);
     };
     

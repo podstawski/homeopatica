@@ -18,8 +18,11 @@ module.exports = function(socket) {
     });
     
     socket.on('signin',function(redir){
-        if (!redir) {
+        if (redir===null) {
             toastr.error($.translate('Email or password incorrect'), $.translate('Login error!'));
+        }
+        else if (redir===false) {
+            toastr.warning($.translate('Your email was not activated, check your mailbox'), $.translate('Login error!'));
         } else {
             $('body').fadeOut(750,function(){
                 location.href=redir;
