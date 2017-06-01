@@ -38,9 +38,20 @@ module.exports = function (database,socket,sockets,session,mailer) {
         });
     };
     
+    const patientSet = function (id,data) {
+        id=parseInt(id);
+        patient.get(id,function(p){
+            if (!p || p.users!=session.user.id) return;
+            patient.set(data,id,function(p){
+            });
+        });
+    }
+    
  
     if (socket) {
         socket.on('add-patient',addPatient);
         socket.on('patients',patients);
+        socket.on('patient',patientSet);
+        
     }
 }

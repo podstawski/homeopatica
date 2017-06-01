@@ -122,7 +122,7 @@ var Server = function(options,database,mailer,logger) {
         var map = new Map(database,httpSocket,httpClients,session[hash],mailer);
         var auth = new Auth(database,httpSocket,httpClients,session[hash],mailer);
         
-        if (typeof(session[hash].user)!='undefined' && typeof(session[hash].user.doctor)!='undefined') {
+        if (session[hash].user!=null && typeof(session[hash].user.doctor)!='undefined') {
             var doctor = new Doctor(database,httpSocket,httpClients,session[hash],mailer);
         }
         

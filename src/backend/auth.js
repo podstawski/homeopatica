@@ -58,10 +58,14 @@ module.exports = function (database,socket,sockets,session,mailer) {
         });
     };
     
+    const logout = function() {
+        session.user=null;  
+    };
     
     if (socket) {
         socket.on('signup',signup);
         socket.on('signin',signin);
+        socket.on('logout',logout);
     }
     
     

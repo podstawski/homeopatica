@@ -127,7 +127,66 @@ body.doctor {
 }
 
 .doctor .dataTables_wrapper {
-    margin-top: 130px;
+    margin-top: 230px;
+}
+
+.doctor .patients tr.odd,
+.doctor tr.odd .patient-name input{
+    background-color: #e8e8e8;
+}
+
+.doctor .patients tr.even,
+.doctor tr.even .patient-name input {
+    background-color: #f0f0f0;
+}
+
+
+
+.doctor .patient-name input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    font-size: 16px;
+    font-family: Tahoma;
+}
+
+.doctor td.attr input {
+    display: none;
+}
+
+.doctor td.attr label {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background-size: 60%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    border-color: #fff;
+    border-style: dotted;
+    border-width: 1px;
+    border-radius: 50%;
+}
+
+.doctor td.attr input:checked+label {
+    border-color: #222;
+    background-color: rgba(20,20,20,0.1);
+}
+
+.doctor td.attr label.gm {
+    background-image: url('male.svg');
+}
+
+.doctor td.attr label.gf {
+    background-image: url('female.svg');
+}
+
+.doctor td.attr select {
+    display: inline-block;
+    position: relative;
+    top: -10px;
+    margin-left: 5px;
+    width: 50px;
 }
 
 .doctor div.plus {
@@ -142,6 +201,31 @@ body.doctor {
     cursor: pointer;
 }
 
+.doctor div.logout {
+    background-image: url('logout.svg');
+    background-repeat: no-repeat;
+    background-size: 100%;
+    width:50px;
+    height: 50px;
+    position: fixed;
+    top:20px;
+    right: 30px;
+    cursor: pointer;
+}
+
+.doctor td.interviews div {
+    display: inline-block;
+    background-image: url('plus.svg');
+    background-repeat: no-repeat;
+    background-size: 100%;
+    width:25px;
+    height:25px;
+    cursor: pointer;
+    position: relative;
+    margin-left: 15px;
+    top: 8px;
+}
+
 
 @media (max-width: 500px) {
 	.login .login-panel,
@@ -149,12 +233,20 @@ body.doctor {
 		margin: 2em 1em;
 	}
     body.doctor {
-        background-position: center -200px;
+        background-position: center -220px;
+    }
+    
+    .doctor .dataTables_wrapper {
+        margin-top: 110px;
     }
 }
 
 @media (max-width: 1400px) {
     body.doctor {
-        background-position: center -150px;
+        background-position: center -180px;
+    }
+    
+    .doctor .dataTables_wrapper {
+        margin-top: 150px;
     }
 }

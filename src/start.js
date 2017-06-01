@@ -32,7 +32,10 @@ const init = function () {
 		login(socket);
 	}
 	
-	
+	jQuery('.logout').click(function(e){
+        socket.emit('logout');
+        location.href='/';
+    });
 	
 	
 }
