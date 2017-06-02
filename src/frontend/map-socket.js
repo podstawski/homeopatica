@@ -517,5 +517,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
  
     menuContainer.find('.icon.insertRoot').click(function(e){
         last_question = mapModel.getSelectedNodeId();
-    });   
+    });
+    
+    
 }

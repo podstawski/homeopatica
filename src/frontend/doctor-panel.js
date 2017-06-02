@@ -22,5 +22,6 @@ module.exports = function(socket) {
         fixed_mode=false;
     });
     
+    
     $('.doctor-panel .translate').translate();
 }
