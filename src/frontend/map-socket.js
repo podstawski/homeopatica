@@ -31,6 +31,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         last_xy=[0,0];
     var self=this;
     var language = navigator.language || navigator.userLanguage;
+    var $=jQuery;
     
     moment.locale(language);
     
@@ -110,11 +111,48 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         });
         
         
+        $('.doctor-panel .patient_name').text(examination.patient.name);
+        if (examination.patient.yob && examination.patient.mob) {
+            var age_ms=examination.examination.date - new Date(examination.patient.yob,examination.patient.mob,5);
+            var age_m=Math.floor(age_ms/(1000*3600*24*(365/12)));
+            var age;
+            if (age_m>24) {
+                age=Math.floor(age_m/12);
+            } else {
+                age=age_m+'m';
+            }
+            
+            if (examination.patient.gender=='M') {
+                age=$.translate('Male')+' '+age;
+            }
+            if (examination.patient.gender=='F') {
+                age=$.translate('Female')+' '+age;
+            }
+            
+            $('.doctor-panel .patient_age').text(age);
+        }
         
         container.removeClass('loader');
         //console.log(map);return;
         mapModel.setIdea(content(map));
         globalLock=false;
+        
+        
+        socket.emit('examinations',examination.patient.id);
+    });
+    
+    socket.on('examinations',function(examinations) {
+        if(examinations.recordsTotal==0) return;
+        var html='<ul>';
+        
+        for (var i=0;i<examinations.data.length; i++) {
+            html+='<li><a href="/map/'+examinations.data[i].id+'">';
+            html+=examinations.data[i].title;
+            html+=' ('+moment(examinations.data[i].date).format('DD MMM YYYY')+')';
+            html+='</a></li>';
+        }
+        html+='</ul>';
+        $('.doctor-panel .patient_history').html(html);
     });
     
   
@@ -226,12 +264,9 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (typeof(nodes[node.id])=='undefined') return;
         
         if (typeof(node.attr)=='undefined' ) node.attr={};
-        if (typeof(node.attr.position)=='undefined' ) node.attr.position=[node.x,node.y];
         
         if (!lockWall('nodeAttrChanged','updateAttr',node.id,[nodes[node.id],node.attr])) return;
-        
-        
-        
+ 
         socket.emit('node',nodes[node.id],{attr:node.attr});
     });
     mapModel.addEventListener('nodeTitleChanged', function(node){

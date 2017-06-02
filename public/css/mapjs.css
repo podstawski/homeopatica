@@ -195,10 +195,10 @@ body {
 .doctor-panel .patient_age {
     font-size: 14px;
     float: right;
-    width: 80px;
+    width: 120px;
     position: relative;
-    left: 24px;
-    top: 92px;
+    left: 43px;
+    top: 70px;
     transform: rotate(-90deg);
     -webkit-transition: all 1s ease;
     -moz-transition: all 1s ease;
@@ -234,6 +234,10 @@ body {
 	margin-top: 50px;
 }
 
+.doctor-panel .patient_history a {
+	color: #fff;
+	font-size: 14px;
+}
 
 .doctor-panel .patient_search {
 	border: solid #fff;

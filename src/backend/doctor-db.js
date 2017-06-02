@@ -19,7 +19,7 @@ module.exports = function (database,socket,sockets,session,mailer) {
     
     const patients = function() {
         patient_access.init(function(){
-            patient_access.leftjoin({patient:'patient'},[{'patient_access.users':session.user.id}],['patient._updated DESC'],function(data){
+            patient_access.leftjoin({patient:'patient'},[{'patient_access.users':session.user.id}],['patient_access._updated DESC'],function(data){
                 socket.emit('patients',data);
             });
         });

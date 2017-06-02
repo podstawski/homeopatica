@@ -11,11 +11,15 @@ module.exports = function (database,socket,sockets,session,mailer) {
     var examination=database.t('examination'); 
     var question=database.t('question');
     var remedy=database.t('remedy');
+    var patient=database.t('patient');
+    
     var examination_id=0;
     
     var time_delta=0;
     
-    var time = function(t) {
+    const common = require('./common.js')(database);
+    
+    const time = function(t) {
         time_delta=Math.round((t-(new Date).getTime())/1800000)*1800000;
     };
     
@@ -49,13 +53,15 @@ module.exports = function (database,socket,sockets,session,mailer) {
     
     var examination_map=function(id) {
 
+        if (session.user==null || session.user.id==null) return;
+        
         examination_id=id;
         for (var x in sockets) {
             if (sockets[x].socket==socket) sockets[x].examination=examination_id;
         }
         
         var examination_map_counter=0;
-        var result={examination:{},questions:[],remedies:[]};
+        var result={examination:null,questions:[],remedies:[],patient:null};
         
         const get_questions=function(parent,questions) {
             
@@ -91,21 +97,32 @@ module.exports = function (database,socket,sockets,session,mailer) {
         examination.init(function(){
             question.init(function(){
                 remedy.init(function(){
-                    get_questions(null,result.questions);
-                    get_remedies(result.remedies);
-                    
-                    examination.get(id,function(data){
-                        if (data) {
-                            data.date-=time_delta;
-                            result.examination=data;
-                            examination_map_counter--;
-                        } else {
-                            examination.add({id:id, 'date': (new Date).getTime()},function(data){
-                                data.date-=time_delta;
-                                result.examination=data;
-                                examination_map_counter--;
-                            });
-                        }
+                    patient.init(function(){
+                        get_questions(null,result.questions);
+                        get_remedies(result.remedies);
+                        
+                        examination.get(id,function(data){
+                            if (data) {
+                                common.checkRights(session.user.id,data.patient,function(pa){
+                                    if (pa) {
+                                        patient.get(data.patient,function(p) {
+                                            data.date-=time_delta;
+                                            result.examination=data;
+                                            result.patient=p;
+                                            examination_map_counter--;
+                                        });
+                                        // empty update to touch update date:
+                                        database.t('patient_access').set({patient:pa.patient},pa.id);
+
+                                    } else {
+                                        examination_map_counter--;
+                                    }
+                                    
+                                    
+                                });
+    
+                            } 
+                        });
                     });
                 });
             });
@@ -115,6 +132,10 @@ module.exports = function (database,socket,sockets,session,mailer) {
             if (examination_map_counter>0) {
                 setTimeout(ret,50);
             } else {
+                if (result.examination==null) {
+                    result.remiedies=[];
+                    result.questions=[];
+                }
                 socket.emit('examination',result);
             }
         };

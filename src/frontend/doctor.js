@@ -74,7 +74,8 @@ module.exports = function(socket) {
         language: {
             url: dtlang(navigator.language || navigator.userLanguage)
         },
-        columns: patientColumns
+        columns: patientColumns,
+        order: []
     });
     
     
@@ -103,7 +104,7 @@ module.exports = function(socket) {
         socket.emit('patient',$(this).closest('tr').attr('id'),obj);
     });
     
-    $(document).on('click','.doctor .patient-name',function(e){
+    $(document).on('click','.doctor td.patient-name',function(e){
         var td=$(this);
         if (td.html().indexOf('<input')>-1) return;
         td.html('<input value="'+td.text()+'"/>');
@@ -130,6 +131,7 @@ module.exports = function(socket) {
     });
     
     socket.on('patients',function(patients){
+        
         
         var data=patients.data;
         var datatable = $('.patients').dataTable().api();
