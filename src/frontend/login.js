@@ -25,7 +25,7 @@ module.exports = function(socket) {
             toastr.warning($.translate('Your email was not activated'), $.translate('Login error!'));
         } else {
             $('body').fadeOut(750,function(){
-                location.href=redir;
+                window.location.href=redir;
             });
         }
     });

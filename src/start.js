@@ -34,7 +34,7 @@ const init = function () {
 	
 	jQuery('.logout').click(function(e){
         socket.emit('logout');
-        location.href='/';
+        window.location.href='/';
     });
 	
 	

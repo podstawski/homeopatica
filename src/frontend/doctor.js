@@ -2,12 +2,17 @@ const   $ = require('jquery'),
         toastr = require('toastr'),
         datatables = require('datatables.net'),
         dtlang = require('./dt-lang.js'),
-        select2 = require('select2');
+        select2 = require('select2'),
+        moment = require('moment');
         
 require('datatables.net-dt/css/jquery.dataTables.css');
 require('select2/dist/css/select2.min.css');
 
 module.exports = function(socket) {
+    
+    const language = navigator.language || navigator.userLanguage;
+    moment.locale(language);
+    const select2_width='70%;'
     
     const patientColumns = [
         {
@@ -106,6 +111,19 @@ module.exports = function(socket) {
         
     });
     
+    $(document).on('click','.doctor .interviews div',function(e){
+        socket.emit('add-examination',$(this).closest('tr').attr('id'));
+        $(this).fadeOut(500);
+        
+    });
+    
+    socket.on('add-examination',function(examination){
+        if (examination==null) {
+            return;
+        }
+        window.location.href='/map/'+examination.id;
+    });
+    
     socket.on('add-patient',function(p){
         toastr.success($.translate('Patient added'), $.translate('Patient status!'));
         get_patients();
@@ -126,8 +144,39 @@ module.exports = function(socket) {
         datatable.rows.add(data);
         datatable.draw();
         
-        $('.doctor td.interviews select').select2().on('select2:opening',function(e){
-            console.log($(this));
+        $('.doctor td.interviews select').select2({width:select2_width}).on('select2:opening',function(e){
+            var element=$(this);
+            
+            if (typeof(element.attr('examinations'))!='undefined') {
+                return;
+            }
+
+            
+            socket.emit('examinations',$(this).closest('tr').attr('id'));
+            socket.once('examinations',function(examinations){
+                if (!examinations || examinations.recordsTotal==0) {
+                    return;
+                }
+                element.attr('examinations','1');
+                
+                var options=[{
+                    id:0,
+                    text: $.translate('Interviews')
+                }];
+                
+                for (var i=0; i<examinations.recordsTotal; i++) {
+                    options.push({
+                        id:examinations.data[i].id,
+                        text:examinations.data[i].title+'. '+moment(examinations.data[i].date).format('DD MMM YYYY')
+                    });
+                }
+                element.select2({data: options, width:select2_width});
+                element.select2('open');
+                
+            });
+        }).on('select2:select',function(e){
+            if( parseInt($(this).val())==0) return;
+            window.location.href='/map/'+$(this).val();
         });
         
     });

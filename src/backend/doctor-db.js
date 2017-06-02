@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 
+
 function md5(txt) {
     var md5sum = crypto.createHash('md5');
     md5sum.update(txt);
@@ -10,7 +11,8 @@ function md5(txt) {
 module.exports = function (database,socket,sockets,session,mailer) {
     var users=database.t('users'),
         patient=database.t('patient'),
-        patient_access=database.t('patient_access'); 
+        patient_access=database.t('patient_access');
+    const common = require('./common.js')(database);
     
     if (session.user==null || session.user.id==null) return;
     
@@ -45,13 +47,53 @@ module.exports = function (database,socket,sockets,session,mailer) {
             patient.set(data,id,function(p){
             });
         });
-    }
+    };
     
+    const addExamination = function (patient_id) {
+        patient_id=parseInt(patient_id);
+        common.checkRights(session.user.id,patient_id,function(pa){
+            if (!pa) {
+                socket.emit('add-examination');
+            } else {
+                const examination=database.t('examination');
+                examination.init(function(){
+                    examination.add({
+                        users:session.user.id,
+                        date: Date.now(),
+                        patient: patient_id
+                    },function(exam) {
+                        socket.emit('add-examination',exam);
+                    });
+                });
+            }
+        }); 
+   
+    };
+    
+    const examinations = function(patient_id) {
+        patient_id=parseInt(patient_id);
+        common.checkRights(session.user.id,patient_id,function(pa){
+            if (!pa) {
+                socket.emit('examinations');
+            } else {
+                const examination=database.t('examination');
+                examination.init(function(){
+                    examination.select([{
+                        patient: patient_id
+                    }],['date DESC'],function(exams) {
+                        socket.emit('examinations',exams);
+                    });
+                });
+            }
+        }); 
+        
+    };
  
     if (socket) {
         socket.on('add-patient',addPatient);
         socket.on('patients',patients);
         socket.on('patient',patientSet);
-        
+        socket.on('add-examination',addExamination);
+        socket.on('examinations',examinations);
     }
 }

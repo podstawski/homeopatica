@@ -213,6 +213,10 @@ body.doctor {
     cursor: pointer;
 }
 
+.doctor td.interviews .select2-container {
+    width: 70%;
+}
+
 .doctor td.interviews div {
     display: inline-block;
     background-image: url('plus.svg');
