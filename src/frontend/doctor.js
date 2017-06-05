@@ -35,12 +35,22 @@ module.exports = function(socket) {
                 
                 html+='<input type="radio" name="gender['+full.id+']" value="M" id="g_m_'+full.id+'"';
                 if (full.gender!=null && full.gender=='M') html+=' checked';
-                html+='><label for="g_m_'+full.id+'" class="gm" title="'+$.translate('Male')+'"></label>';
+                html+='><label for="g_m_'+full.id+'" class="gm gender" title="'+$.translate('Male')+'"></label>';
                 
                 html+='<input type="radio" name="gender['+full.id+']" value="F" id="g_f_'+full.id+'"';
                 if (full.gender!=null && full.gender=='F') html+=' checked';
-                html+='><label for="g_f_'+full.id+'" class="gf" title="'+$.translate('Female')+'"></label>';
+                html+='><label for="g_f_'+full.id+'" class="gf gender" title="'+$.translate('Female')+'"></label>';
                 
+
+                
+                html+='<select name="mob">';
+                html+='<option value="">'+$.translate('Month of birth')+'</option>';
+                for (var i=1; i<=12;i++) {
+                    let selected=(full.mob!=null && full.mob==i)?' selected':'';
+                    html+='<option value="'+i+'"'+selected+'>'+moment.monthsShort()[i-1]+'</option>';
+                }
+                html+='</select>';
+
                 html+='<select name="yob">';
                 html+='<option value="">'+$.translate('Year of birth')+'</option>';
                 for (var i=year; i>year-110;i--) {
@@ -49,20 +59,13 @@ module.exports = function(socket) {
                 }
                 html+='</select>';
                 
-                html+='<select name="mob">';
-                html+='<option value="">'+$.translate('Month of birth')+'</option>';
-                for (var i=1; i<=12;i++) {
-                    let selected=(full.mob!=null && full.mob==i)?' selected':'';
-                    html+='<option value="'+i+'"'+selected+'>'+i+'</option>';
-                }
-                html+='</select>';
-                
-                html+='<input type="checkbox"';
+                html+='<input type="checkbox" class="notifications" id="not_'+full.id+'"';
                 if (full.notifications!=null && full.notifications==1) {
                     html+=' checked';
                 }
                 html+='/>';
                 
+                html+='<label class="notifications" title="'+$.translate('Receive email notifications')+'" for="not_'+full.id+'"></label>';
                 
                 return html;
             }
@@ -75,6 +78,9 @@ module.exports = function(socket) {
                 var html='<select class="notshare"><option value="0">'+$.translate('Interviews')+'</option></select>';
                 html+='<div class="add notshare" title="'+$.translate('Add an interview')+'"></div>';
                 html+='<div class="share" title="'+$.translate('Share this patient')+'"></div>';
+                
+                html+='<div class="share-wraper"></div>';
+                html+='<input class="share" placeholder="'+$.translate('Enter comma separated emails')+'"/>';
                 return html;
             }
         }
@@ -104,14 +110,38 @@ module.exports = function(socket) {
         $(this).closest('td').text($(this).val());
     });
     
-    $(document).on('click','.doctor .attr label',function(e){
+    $(document).on('click','.doctor .attr label.gender',function(e){
         var gender=$('#'+$(this).attr('for')).val();
         socket.emit('patient',$(this).closest('tr').attr('id'),{gender:gender});
     });
+    
+    $(document).on('click','.doctor .attr label.notifications',function(e){
+        var notifications=$('#'+$(this).attr('for')).prop('checked')?1:0;
+        socket.emit('patient_access',$(this).closest('tr').attr('id'),{notifications:notifications});
+    });
+    
     $(document).on('change','.doctor .attr select',function(e){
         var obj={};
         obj[$(this).attr('name')]=parseInt($(this).val());
         socket.emit('patient',$(this).closest('tr').attr('id'),obj);
+    });
+    
+    const restorShare = function(input) {
+       var td=input.closest('td');
+        input.fadeOut(500,function(){
+            td.find('div.share-wraper').hide();
+            td.find('.notshare,.select2,div.share').fadeIn(500);
+        });            
+    };
+    
+    
+    $(document).on('change','.doctor .patients .interviews input.share',function(e){
+        restorShare($(this));
+        if ($(this).val().trim().length>0) socket.emit('share',$(this).closest('tr').attr('id'),$(this).val(),language);
+    });
+    
+    $(document).on('blur','.doctor .patients .interviews input.share',function(e){
+        if ($(this).val().trim().length==0) restorShare($(this));
     });
     
     $(document).on('click','.doctor td.patient-name',function(e){
@@ -125,6 +155,18 @@ module.exports = function(socket) {
     $(document).on('click','.doctor .interviews div.add',function(e){
         socket.emit('add-examination',$(this).closest('tr').attr('id'));
         $(this).fadeOut(500);
+        
+    });
+    
+    $(document).on('click','.doctor .interviews div.share',function(e){
+        var td=$(this).closest('td')
+        td.find('.notshare,.select2').fadeOut(500,function(){
+            td.find('input.share').fadeIn(500).focus();
+            td.find('div.share-wraper').show();
+        });
+        $(this).fadeOut(500);
+        
+
         
     });
     
@@ -192,6 +234,10 @@ module.exports = function(socket) {
         });
         
     });
+    
+    socket.on('share',function(c,p){
+        toastr.success($.translate('You have shared data of')+' '+p.name+': '+c,$.translate('Share'));
+    })
     
     
     $('.translate').translate();

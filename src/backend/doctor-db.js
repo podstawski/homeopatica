@@ -1,21 +1,13 @@
-const crypto = require('crypto');
-
-
-function md5(txt) {
-    var md5sum = crypto.createHash('md5');
-    md5sum.update(txt);
-    return md5sum.digest('hex');
-}
-
 
 module.exports = function (database,socket,sockets,session,mailer) {
     var users=database.t('users'),
         patient=database.t('patient'),
-        patient_access=database.t('patient_access');
+        patient_access=database.t('patient_access'),
+        invitations=database.t('invitations');
+        
     const common = require('./common.js')(database);
     
     if (session.user==null || session.user.id==null) return;
-    
     
     const patients = function() {
         patient_access.init(function(){
@@ -28,7 +20,7 @@ module.exports = function (database,socket,sockets,session,mailer) {
     
     const addPatient = function() {
         patient.add({users:session.user.id},function(p){
-            patient.set({hash:md5(p.id+'')},p.id,function(p){
+            patient.set({hash:common.md5(p.id+'')},p.id,function(p){
                 patient_access.add({
                     users:session.user.id,
                     patient:p.id,
@@ -45,6 +37,16 @@ module.exports = function (database,socket,sockets,session,mailer) {
         patient.get(id,function(p){
             if (!p || p.users!=session.user.id) return;
             patient.set(data,id,function(p){
+            });
+        });
+    };
+    
+    const patientAccessSet = function (p,data) {
+        
+        patient_access.select([{patient:p,users:session.user.id}],null,function(pa){
+            if (pa.data.length==0) return;
+    
+            patient_access.set(data,pa.data[0].id,function(pa){
             });
         });
     };
@@ -88,12 +90,64 @@ module.exports = function (database,socket,sockets,session,mailer) {
         }); 
         
     };
+    
+    const share2email = function (p,e,lang) {
+        users.select([{email:e}],null,function(data) {
+            if (data.data.length==0) {
+                invitations.init(function(){
+                    invitations.add({
+                        email:e,
+                        patient:p.id
+                    });
+                });
+            } else {
+                patient_access.select([{users:data.data[0].id, patient:p.id}],null,function(pa){
+                    if (pa.data.length==0) {
+                        patient_access.add({
+                            users:data.data[0].id,
+                            patient:p.id,
+                            notifications:1
+                        });
+                    }
+                });
+            }
+            
+            mailer.send('share',{
+                me: session.user,
+                email: e,
+                patient: p 
+            },lang);
+        }); 
+    }
+    
+    const share=function(patient_id,email,lang) {
+        email=email.replace(/[ ;]/g,',');
+        
+        var emails=email.split(',');
+        
+        patient.get(patient_id,function(p){
+            if (!p) return;
+            var count=0;
+            for (var i=0; i<emails.length; i++) {
+                var e=common.email_std(emails[i]);
+                if (e.length==0) continue;
+                share2email(p,e,lang);
+                count++;
+            }
+
+            socket.emit('share',count,p);
+        });
+        
+        
+    };
  
     if (socket) {
         socket.on('add-patient',addPatient);
         socket.on('patients',patients);
         socket.on('patient',patientSet);
+        socket.on('patient_access',patientAccessSet);
         socket.on('add-examination',addExamination);
         socket.on('examinations',examinations);
+        socket.on('share',share);
     }
 }

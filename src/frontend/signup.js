@@ -39,10 +39,13 @@ module.exports = function(socket) {
     });
     
     
-    socket.on('signup',function(result){
+    socket.on('signup',function(result,data){
         switch (result) {
             case 'email_exists':
                 toastr.error($.translate('Email exists'), $.translate('Signup error!'));
+                break;
+            case 'ok':
+                toastr.success($.translate('We have sent you an activation link')+' '+data.email, $.translate('Activate your account'));
                 break;
         }
     });

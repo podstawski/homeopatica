@@ -11,7 +11,8 @@ module.exports = {
         auth: {
             user: 'gmail.user@gmail.com',
             pass: 'yourpass'
-        }
+        },
+        from: 'Homeopatica <homeopatica@webkameleon.com>'
     },
     root: 'http://foo.bar.com'
 }

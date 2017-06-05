@@ -1,4 +1,4 @@
 module.exports = {
-    from: "Homeopatica <homeopatica@webkameleon.com>",
+    from: "[options.nodemailer.from]",
     locale: {}
 }

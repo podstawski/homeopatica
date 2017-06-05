@@ -1,49 +1,59 @@
-const crypto = require('crypto');
-
-function md5(txt) {
-    var md5sum = crypto.createHash('md5');
-    md5sum.update(txt);
-    return md5sum.digest('hex');
-}
-
-function email_std(e) {
-    return e.trim().toLowerCase();
-}
-
 
 module.exports = function (database,socket,sockets,session,mailer) {
-    var users=database.t('users'); 
-   
+    var users=database.t('users'),
+        invitations=database.t('invitations'),
+        patient_access=database.t('patient_access'); 
+
+    const common=require('./common.js')(database);   
   
     var genPass = function() {
-        var hash=md5(Math.random()+'_'+Date.now());
+        var hash=common.md5(Math.random()+'_'+Date.now());
         return hash;
     }
   
     const signup = function(data,lang) {
-        users.count([{email:email_std(data.email)}],function(c){
+        users.count([{email:common.email_std(data.email)}],function(c){
             if (c>0) {
                 socket.emit('signup','email_exists');
                 return;
             }
             users.add({
-                email:email_std(data.email),
+                email:common.email_std(data.email),
                 active:0,
                 hash:genPass(),
                 doctor:data.doctor==1?1:0,
-                password: md5(data.password),
+                password: common.md5(data.password),
                 date: Date.now()+3*24*3600*1000},
                 
                 function (r) {
                     mailer.send('adduser',r,lang);
+                    socket.emit('signup','ok',r);
+                    invitations.init(function(){
+                        patient_access.init(function(){
+                            invitations.select([{email:r.email}],null,function(invitation){
+                                for (var i=0; i<invitation.data.length; i++) {
+                                    patient_access.add({
+                                        users:r.id,
+                                        patient:invitation.data[i].patient,
+                                        notifications:1
+                                    });
+                                    
+                                    invitations.remove(invitation.data[i].id);
+                                    
+                                }
+                            });
+                        });
+
+                    });
                 });            
 
         });
     };
     
     const signin = function(email,pass) {
-        users.select([{email:email_std(email)}],null,function(data){
-            if (data.recordsTotal==0 || data.data[0].password!=md5(pass.trim())) {
+        
+        users.select([{email:common.email_std(email)}],null,function(data){
+            if (data.recordsTotal==0 || data.data[0].password!=common.md5(pass.trim())) {
                 socket.emit('signin',null);
                 return;
             }

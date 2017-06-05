@@ -1,7 +1,26 @@
 var smekta_debug = false;
 
-module.exports = function(pattern,vars) {
+
+const flatern = function(obj,key) {
+    for (var x in obj[key]) {
+        obj[key+'.'+x] = clone(obj[key][x]);
+        if (typeof(obj[key][x])=='object' && obj[key][x]!=null && obj[key][x].constructor==Object) {
+            flatern(obj,key+'.'+x);
+        }
+        delete (obj[key][x]);    
+    }
+    delete(obj[key]);
+    
+}
+
+const clone=function(o) {
+    return JSON.parse(JSON.stringify(o));
+}
+
+
+module.exports = function(pattern,_vars) {
     var now=new Date().getTime();
+    var vars=clone(_vars);
     
     if (smekta_debug)  console.log(now,'ENTER','len:',pattern.length,'keys:',Object.keys(vars).length);
 
@@ -9,7 +28,11 @@ module.exports = function(pattern,vars) {
     {
         if (vars[key]==null)  vars[key]='';
         
-        if (typeof(vars[key])=='object') {
+        if (typeof(vars[key])=='object' && vars[key]!=null && vars[key].constructor==Object) {
+            flatern(vars,key);    
+        }
+        
+        if (typeof(vars[key])=='object' && vars[key]!=null && vars[key].constructor==Array) {
             var re=new RegExp('\\[loop:'+key+'\\](.|[\r\n])+\\[endloop:'+key+'\\]',"g");
             var loop=pattern.match(re);
             if (smekta_debug) console.log(loop);
@@ -35,14 +58,16 @@ module.exports = function(pattern,vars) {
     
     }
     
+    
     for (var key in vars)
     {
+        if (vars[key]==null) vars[key]=false;
         
         re=new RegExp('\\[if:'+key+'\\](.|[\r\n])+?\\[endif:'+key+'\\]',"g");
-        if (vars[key].length==0 || vars[key]==null || vars[key]=='0') pattern=pattern.replace(re,'');
+        if ( !vars[key] || vars[key].length==0 || vars[key]=='0') pattern=pattern.replace(re,'');
         
         re=new RegExp('\\[if:!'+key+'\\](.|[\r\n])+?\\[endif:!'+key+'\\]',"g");
-        if (vars[key].length>0 || vars[key]) pattern=pattern.replace(re,'');
+        if (vars[key] || vars[key].length>0 ) pattern=pattern.replace(re,'');
         
         re=new RegExp('\\['+key+'\\]',"g");
         pattern=pattern.replace(re,vars[key]);

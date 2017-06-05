@@ -6,6 +6,7 @@ module.exports = function(options) {
     var transporter = nodemailer.createTransport(options.nodemailer);
     
     const send = function(action,data,lang) {
+        data.options=options;
         var header = require(__dirname+'/../mailer/default.js');
         var header2 = require(__dirname+'/../mailer/'+action+'.js');
         
