@@ -217,7 +217,7 @@ body.doctor {
     width: 70%;
 }
 
-.doctor td.interviews div {
+.doctor td.interviews div.add {
     display: inline-block;
     background-image: url('plus.svg');
     background-repeat: no-repeat;

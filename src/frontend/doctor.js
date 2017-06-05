@@ -57,15 +57,25 @@ module.exports = function(socket) {
                 }
                 html+='</select>';
                 
+                html+='<input type="checkbox"';
+                if (full.notifications!=null && full.notifications==1) {
+                    html+=' checked';
+                }
+                html+='/>';
+                
+                
                 return html;
             }
         },
         {
-            title: $.translate('Interviews'),
+            title: $.translate('Options'),
             className: 'interviews',
             sortable: false,
             render: function ( data, type, full, meta ) {
-                return '<select><option value="0">'+$.translate('Interviews')+'</option></select><div title="'+$.translate('Add an interview')+'"></div>';
+                var html='<select class="notshare"><option value="0">'+$.translate('Interviews')+'</option></select>';
+                html+='<div class="add notshare" title="'+$.translate('Add an interview')+'"></div>';
+                html+='<div class="share" title="'+$.translate('Share this patient')+'"></div>';
+                return html;
             }
         }
     ];
@@ -112,7 +122,7 @@ module.exports = function(socket) {
         
     });
     
-    $(document).on('click','.doctor .interviews div',function(e){
+    $(document).on('click','.doctor .interviews div.add',function(e){
         socket.emit('add-examination',$(this).closest('tr').attr('id'));
         $(this).fadeOut(500);
         

@@ -31,6 +31,7 @@ var Model = function(opt,logger) {
             });
             connection.on('error', function(err) {
                 logger.log('disconnected',err);
+                connection.destroy();
                 setTimeout(function(){
                     connect(null,true);
                 },1000);

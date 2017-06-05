@@ -123,13 +123,15 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             }
             
             if (examination.patient.gender=='M') {
-                age=$.translate('Male')+' '+age;
+                if (age_m<12*15) age=$.translate('MaleK')+' '+age;
+                else age=$.translate('Male')+' '+age;
             }
             if (examination.patient.gender=='F') {
-                age=$.translate('Female')+' '+age;
+                if (age_m<12*15) age=$.translate('FemaleK')+' '+age;
+                else age=$.translate('Female')+' '+age;
             }
             
-            $('.doctor-panel .patient_age').text(age);
+            $('.doctor-panel .patient_age').text(age).fadeIn(3000);
         }
         
         container.removeClass('loader');
@@ -146,6 +148,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         var html='<ul>';
         
         for (var i=0;i<examinations.data.length; i++) {
+            if (examinations.data[i].id==eid) continue;
             html+='<li><a href="/map/'+examinations.data[i].id+'">';
             html+=examinations.data[i].title;
             html+=' ('+moment(examinations.data[i].date).format('DD MMM YYYY')+')';
@@ -304,6 +307,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
                     var remedy=nodes[node.id];
                     socket.emit('node',nodes[last_question],{remedy:remedy[2]});
                     wallLink(node.id,last_question);
+                    last_question=0;
                     
                 };
                 setTimeout(checkIfTitleEnered,1000);

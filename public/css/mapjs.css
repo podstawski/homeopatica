@@ -193,6 +193,7 @@ body {
 
 
 .doctor-panel .patient_age {
+	display: none;
     font-size: 14px;
     float: right;
     width: 120px;
