@@ -155,6 +155,7 @@ module.exports = function (database,socket,sockets,session,mailer) {
                 if (obj==null) obj={};
                 if (node[1]!='examination') obj.examination=examination_id;
                 if (typeof(obj.date)=='undefined') obj.date=Date.now();
+                obj.users=session.user.id;
                 database.t(node[1]).add(obj,function(d){
                      socket.emit('newnode',d);
                      socket.emit('pass',genPass());

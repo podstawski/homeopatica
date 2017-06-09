@@ -1,4 +1,4 @@
-var mysql = require('mysql');
+
 
 var connections={};
 
@@ -18,6 +18,8 @@ var Model = function(opt,logger) {
             connection=connections[token];
             if(typeof(cb)=='function') cb();
         } else {
+            var mysql = require('mysql');
+            if (connections[token]!==undefined) delete(connections[token]);
             connection=mysql.createConnection(opt);
             connection.connect(function(err){
                 if(!err) {
