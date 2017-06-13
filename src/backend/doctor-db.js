@@ -34,15 +34,19 @@ module.exports = function (database,socket,sockets,session,mailer) {
     
     const patientSet = function (id,data) {
         id=parseInt(id);
+        
         patient.get(id,function(p){
-            if (!p || p.users!=session.user.id) return;
+            if (!p || p.users!=session.user.id) {
+                socket.emit('patient',id,null);
+                return;
+            }
             patient.set(data,id,function(p){
             });
         });
     };
     
     const patientAccessSet = function (p,data) {
-        
+        //console.log(p,data);
         patient_access.select([{patient:p,users:session.user.id}],null,function(pa){
             if (pa.data.length==0) return;
     

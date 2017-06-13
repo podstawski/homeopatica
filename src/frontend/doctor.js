@@ -13,15 +13,54 @@ module.exports = function(socket) {
     const language = navigator.language || navigator.userLanguage;
     moment.locale(language);
     const select2_width='70%;'
+    const storage_name = 'homeopathy';
+    var myStorage = null;
+    var hashTable={};
+    if (typeof(Storage) != "undefined") {
+        if (typeof(window.localStorage[storage_name])=='undefined') window.localStorage.setItem(storage_name,'{}');
+        myStorage=JSON.parse(window.localStorage[storage_name]);
+
+    }
+    
+    const store=function(id,key,val) {
+        id=parseInt(id);
+        if (typeof(myStorage[hashTable[id]])=='undefined') {
+            myStorage[hashTable[id]]={};
+        }
+        myStorage[hashTable[id]][key] = val;
+        window.localStorage.setItem(storage_name,JSON.stringify(myStorage));
+    };
+    
     
     const patientColumns = [
         {
             title: $.translate('Name of patient'),
+            data: "hash",
+            className: 'patient-nick',
+            render: function ( data, type, full, meta ) {
+                if (myStorage==null) return '';
+                
+                var name='';
+                if (typeof(myStorage[data])!='undefined') {
+                    name=myStorage[data].name;
+                }
+                
+                
+                if (name.length==0)
+                    return '<input placeholder="'+$.translate('Enter patient name')+'"/>';
+                    
+                return name;
+            }
+        },
+        {
+            
+            title: $.translate('Nick of patient'),
             data: "name",
             className: 'patient-name',
+            width: '15%',
             render: function ( data, type, full, meta ) {
                 if (data==null || data.length==0)
-                    return '<input placeholder="'+$.translate('Enter patient name')+'"/>';
+                    return '<input placeholder="'+$.translate('Enter patient nickname')+'"/>';
                 return data;
             }
         },
@@ -110,13 +149,18 @@ module.exports = function(socket) {
         $(this).closest('td').text($(this).val());
     });
     
+    $(document).on('change','.doctor .patient-nick input',function(e){
+        store($(this).closest('tr').attr('id'),'name',$(this).val());
+        $(this).closest('td').text($(this).val());
+    });
+    
     $(document).on('click','.doctor .attr label.gender',function(e){
         var gender=$('#'+$(this).attr('for')).val();
         socket.emit('patient',$(this).closest('tr').attr('id'),{gender:gender});
     });
     
     $(document).on('click','.doctor .attr label.notifications',function(e){
-        var notifications=$('#'+$(this).attr('for')).prop('checked')?1:0;
+        var notifications=$('#'+$(this).attr('for')).prop('checked')?0:1;
         socket.emit('patient_access',$(this).closest('tr').attr('id'),{notifications:notifications});
     });
     
@@ -144,7 +188,7 @@ module.exports = function(socket) {
         if ($(this).val().trim().length==0) restorShare($(this));
     });
     
-    $(document).on('click','.doctor td.patient-name',function(e){
+    $(document).on('click','.doctor td.patient-name,.doctor td.patient-nick',function(e){
         var td=$(this);
         if (td.html().indexOf('<input')>-1) return;
         td.html('<input value="'+td.text()+'"/>');
@@ -182,6 +226,10 @@ module.exports = function(socket) {
         get_patients();
     });
     
+    socket.on('patient',function(id,p){
+        if (!p) toastr.warning($.translate('You are not allowed to change this data'), $.translate('Patient status!'));
+    });
+    
     socket.on('patients',function(patients){
         
         
@@ -190,6 +238,7 @@ module.exports = function(socket) {
         
         for (var i=0; i<data.length;i++) {
             data[i].DT_RowId=data[i].id;
+            hashTable[data[i].id]=data[i].hash;
 
             if (data[i].name==null) data[i].name='';
         }
