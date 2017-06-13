@@ -4,7 +4,8 @@ module.exports = function (database,socket,sockets,session,mailer) {
         invitations=database.t('invitations'),
         patient_access=database.t('patient_access'); 
 
-    const common=require('./common.js')(database);   
+    const common=require('./common.js')(database);
+    const encPassword='h9asd82haksdh8asdlj';
   
     var genPass = function() {
         var hash=common.md5(Math.random()+'_'+Date.now());
@@ -72,10 +73,20 @@ module.exports = function (database,socket,sockets,session,mailer) {
         session.user=null;  
     };
     
+    const encrypt = function(data) {
+        socket.emit('encrypt',common.encrypt(JSON.stringify(data),encPassword));
+    };
+
+    const decrypt = function(data) {
+        socket.emit('decrypt',JSON.parse(common.decrypt(data,encPassword)));
+    };
+    
     if (socket) {
         socket.on('signup',signup);
         socket.on('signin',signin);
         socket.on('logout',logout);
+        socket.on('encrypt',encrypt);
+        socket.on('decrypt',decrypt);
     }
     
     

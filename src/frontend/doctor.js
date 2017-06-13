@@ -22,15 +22,37 @@ module.exports = function(socket) {
 
     }
     
+    const saveStorage = function() {
+        window.localStorage.setItem(storage_name,JSON.stringify(myStorage));
+    };
+    
     const store=function(id,key,val) {
         id=parseInt(id);
         if (typeof(myStorage[hashTable[id]])=='undefined') {
             myStorage[hashTable[id]]={};
         }
         myStorage[hashTable[id]][key] = val;
-        window.localStorage.setItem(storage_name,JSON.stringify(myStorage));
+        saveStorage();
     };
     
+    const download=function (data, filename, type) {
+        var file = new Blob([data], {type: type});
+        if (window.navigator.msSaveOrOpenBlob) // IE10+
+            window.navigator.msSaveOrOpenBlob(file, filename);
+        else { // Others
+            var a = document.createElement("a"),
+                    url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);  
+            }, 0); 
+        }
+    }
+
     
     const patientColumns = [
         {
@@ -170,6 +192,37 @@ module.exports = function(socket) {
         socket.emit('patient',$(this).closest('tr').attr('id'),obj);
     });
     
+    $(document).on('click','.doctor div.save',function(e){
+        socket.emit('encrypt',myStorage);
+    });
+    
+    socket.on('encrypt', function(data) {
+        download(data,$.translate('patients')+'.txt','text');
+    });
+    
+    socket.on('decrypt', function(data) {
+        for (var key in data) {
+            myStorage[key]=data[key];
+        }
+        saveStorage();
+        
+        var a = document.createElement("a");
+        a.href = window.location.href;    
+        document.body.appendChild(a);
+        a.click();
+    });
+    
+    const readSingleFile = function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            socket.emit('decrypt',e.target.result);
+        };
+        reader.readAsText(file);  
+    };
+    
     const restorShare = function(input) {
        var td=input.closest('td');
         input.fadeOut(500,function(){
@@ -288,6 +341,8 @@ module.exports = function(socket) {
         toastr.success($.translate('You have shared data of')+' '+p.name+': '+c,$.translate('Share'));
     })
     
+    
+    document.getElementById('file-input').addEventListener('change', readSingleFile, false);
     
     $('.translate').translate();
     
