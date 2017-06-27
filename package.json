@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "pack-js": "webpack",
-    "start": "webpack; node index.js"
+    "start": "git pull; webpack; sh start.sh"
   },
   "keywords": [],
   "author": "",
