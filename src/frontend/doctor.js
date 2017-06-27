@@ -3,28 +3,22 @@ const   $ = require('jquery'),
         datatables = require('datatables.net'),
         dtlang = require('./dt-lang.js'),
         select2 = require('select2'),
+        common = require('./common.js'),
         moment = require('moment');
         
 require('datatables.net-dt/css/jquery.dataTables.css');
 require('select2/dist/css/select2.min.css');
 
 module.exports = function(socket) {
-    
-    const language = navigator.language || navigator.userLanguage;
+
+    const language = common.lang();
     moment.locale(language);
     const select2_width='70%;'
-    const storage_name = 'homeopathy';
-    var myStorage = null;
-    var hashTable={};
-    if (typeof(Storage) != "undefined") {
-        if (typeof(window.localStorage[storage_name])=='undefined') window.localStorage.setItem(storage_name,'{}');
-        myStorage=JSON.parse(window.localStorage[storage_name]);
-
-    }
     
-    const saveStorage = function() {
-        window.localStorage.setItem(storage_name,JSON.stringify(myStorage));
-    };
+    var myStorage = common.storage();
+    var hashTable={};
+    
+    
     
     const store=function(id,key,val) {
         id=parseInt(id);
@@ -32,7 +26,7 @@ module.exports = function(socket) {
             myStorage[hashTable[id]]={};
         }
         myStorage[hashTable[id]][key] = val;
-        saveStorage();
+        common.storage(myStorage);
     };
     
     const download=function (data, filename, type) {
@@ -205,7 +199,8 @@ module.exports = function(socket) {
         for (var key in data) {
             myStorage[key]=data[key];
         }
-        saveStorage();
+        common.storage(myStorage);
+    
         
         var a = document.createElement("a");
         a.href = window.location.href;    

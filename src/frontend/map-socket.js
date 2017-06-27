@@ -1,6 +1,7 @@
 const   content = require('mindmup-mapjs-model').content,
         jQuery = require('jquery'),
         moment = require('moment'),
+        common = require('./common.js'),
         flatpickr = require("flatpickr");
 
 var flatpickr_locales={};
@@ -30,8 +31,10 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         menu_node,
         last_xy=[0,0];
     var self=this;
-    var language = navigator.language || navigator.userLanguage;
+    var language = common.lang();
     var $=jQuery;
+    var myStorage = common.storage();
+    
     
     moment.locale(language);
     
@@ -111,7 +114,8 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         });
         
         
-        $('.doctor-panel .patient_name').text(examination.patient.name);
+        var p_name=typeof(myStorage[examination.patient.hash])!='undefined'?myStorage[examination.patient.hash].name:examination.patient.name;
+        $('.doctor-panel .patient_name').text(p_name);
         if (examination.patient.yob && examination.patient.mob) {
             var age_ms=examination.examination.date - new Date(examination.patient.yob,examination.patient.mob,5);
             var age_m=Math.floor(age_ms/(1000*3600*24*(365/12)));
