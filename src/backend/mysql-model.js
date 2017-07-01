@@ -29,12 +29,13 @@ var Model = function(opt,logger) {
                 } else {
                     connection=null;
                     logger.log('Error connecting database '+opt.database,err);
+			process.exit();
                 }
             });
             connection.on('error', function(err) {
                 logger.log('disconnected',err);
-                connection.destroy();
                 process.exit();
+                connection.destroy();
                 setTimeout(function(){
                     connect(null,true);
                 },1000);
