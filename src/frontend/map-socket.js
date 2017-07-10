@@ -1,6 +1,7 @@
 const   content = require('mindmup-mapjs-model').content,
         jQuery = require('jquery'),
         moment = require('moment'),
+        toastr = require('toastr'),
         common = require('./common.js'),
         flatpickr = require("flatpickr");
 
@@ -117,25 +118,9 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         var p_name=typeof(myStorage[examination.patient.hash])!='undefined'?myStorage[examination.patient.hash].name:examination.patient.name;
         $('.doctor-panel .patient_name').text(p_name);
         if (examination.patient.yob && examination.patient.mob) {
-            var age_ms=examination.examination.date - new Date(examination.patient.yob,examination.patient.mob,5);
-            var age_m=Math.floor(age_ms/(1000*3600*24*(365/12)));
-            var age;
-            if (age_m>24) {
-                age=Math.floor(age_m/12);
-            } else {
-                age=age_m+'m';
-            }
             
-            if (examination.patient.gender=='M') {
-                if (age_m<12*15) age=$.translate('MaleK')+' '+age;
-                else age=$.translate('Male')+' '+age;
-            }
-            if (examination.patient.gender=='F') {
-                if (age_m<12*15) age=$.translate('FemaleK')+' '+age;
-                else age=$.translate('Female')+' '+age;
-            }
-            
-            $('.doctor-panel .patient_age').text(age).fadeIn(3000);
+            var age=common.age(examination.patient.yob,examination.patient.mob,examination.examination.date);       
+            $('.doctor-panel .patient_age').text(common.gender(examination.patient.gender,age) + ' ' + age).fadeIn(3000);
         }
         
         container.removeClass('loader');
@@ -527,5 +512,13 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         last_question = mapModel.getSelectedNodeId();
     });
     
-    
+    var last_ro=0;
+    socket.on('ro',function(){
+        walls=[];
+        if (Date.now()-last_ro<1000) return;
+        last_ro=Date.now();
+        toastr.error($.translate('You must not change anything'),$.translate('Read only'));
+        mapModel.undo('socket');
+        
+    });
 }

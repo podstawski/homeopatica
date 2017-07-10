@@ -281,6 +281,11 @@ body.doctor {
     top: 6px;
 }
 
+.doctor .patients .attr div.age {
+    display: inline-block;
+    position: relative;
+    top: -8px;
+}
 
 .doctor .patients .attr label.notifications {
     background-color: #e9ecee;
@@ -330,6 +335,47 @@ body.doctor {
     height: 30px;
     cursor: pointer;
 }
+
+
+
+.doctor .sharer {
+    position: absolute;
+    border: 1px solid red;
+    border-radius: 10px;
+    background-color: #fff;
+    width: 300px;
+    height: 100px;
+    overflow: auto;
+    display: none;
+    padding: 5px;
+}
+
+.doctor .sharer ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.doctor .sharer ul div {
+    display: inline-block;
+}
+
+.doctor .sharer ul div.email {
+    width: 85%;
+    font-size: 10px;
+}
+
+.doctor .sharer ul div.write {
+    width: 7%;
+}
+
+.doctor .sharer ul div.remove {
+    width: 7%;
+    background-image: url('delete.svg');
+    height: 12px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
 
 @media (max-width: 500px) {
 	.login .login-panel,

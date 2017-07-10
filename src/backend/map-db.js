@@ -14,8 +14,8 @@ module.exports = function (database,socket,sockets,session,mailer) {
     var patient=database.t('patient');
     
     var examination_id=0;
-    
     var time_delta=0;
+    var acl_write=false;
     
     const common = require('./common.js')(database);
     
@@ -103,7 +103,7 @@ module.exports = function (database,socket,sockets,session,mailer) {
                         
                         examination.get(id,function(data){
                             if (data) {
-                                common.checkRights(session.user.id,data.patient,function(pa){
+                                common.checkRights(session.user.id,data.patient,false,function(pa){
                                     if (pa) {
                                         patient.get(data.patient,function(p) {
                                             data.date-=time_delta;
@@ -113,6 +113,10 @@ module.exports = function (database,socket,sockets,session,mailer) {
                                         });
                                         // empty update to touch update date:
                                         database.t('patient_access').set({patient:pa.patient},pa.id);
+                                        acl_write=false
+                                        common.checkRights(session.user.id,data.patient,true,function(pa){
+                                            if(pa) acl_write=true;
+                                        });
 
                                     } else {
                                         examination_map_counter--;
@@ -148,6 +152,11 @@ module.exports = function (database,socket,sockets,session,mailer) {
         
         if (node==null) return;
         if (node[0]!=examination_id) return;
+        
+        if (!acl_write) {
+            socket.emit('ro');
+            return;
+        }
         
         database.t(node[1]).init(function(){
             

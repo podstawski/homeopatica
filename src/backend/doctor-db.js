@@ -19,13 +19,17 @@ module.exports = function (database,socket,sockets,session,mailer) {
     };
     
     const addPatient = function() {
+     
         patient.add({users:session.user.id},function(p){
+         
             patient.set({hash:common.md5(p.id+'')},p.id,function(p){
                 patient_access.add({
                     users:session.user.id,
                     patient:p.id,
-                    notifications:1
+                    notifications:1,
+                    acl_write:1
                 },function(pa){
+                    
                     socket.emit('add-patient',p);
                 });
             });
@@ -57,7 +61,7 @@ module.exports = function (database,socket,sockets,session,mailer) {
     
     const addExamination = function (patient_id) {
         patient_id=parseInt(patient_id);
-        common.checkRights(session.user.id,patient_id,function(pa){
+        common.checkRights(session.user.id,patient_id,true,function(pa){
             if (!pa) {
                 socket.emit('add-examination');
             } else {
@@ -78,7 +82,7 @@ module.exports = function (database,socket,sockets,session,mailer) {
     
     const examinations = function(patient_id) {
         patient_id=parseInt(patient_id);
-        common.checkRights(session.user.id,patient_id,function(pa){
+        common.checkRights(session.user.id,patient_id,false,function(pa){
             if (!pa) {
                 socket.emit('examinations');
             } else {
@@ -126,24 +130,87 @@ module.exports = function (database,socket,sockets,session,mailer) {
     
     const share=function(patient_id,email,lang) {
         email=email.replace(/[ ;]/g,',');
-        
         var emails=email.split(',');
         
         patient.get(patient_id,function(p){
             if (!p) return;
-            var count=0;
-            for (var i=0; i<emails.length; i++) {
-                var e=common.email_std(emails[i]);
-                if (e.length==0) continue;
-                share2email(p,e,lang);
-                count++;
-            }
+            
+            common.checkRights(session.user.id,patient_id,true,function(pa){
+                if (pa==null) {
+                    socket.emit('share',null,p);
+                    return;
+                }
+                
+                var count=0;
+                for (var i=0; i<emails.length; i++) {
+                    var e=common.email_std(emails[i]);
+                    if (e.length==0) continue;
+                    share2email(p,e,lang);
+                    count++;
+                }
+    
+                socket.emit('share',count,p);
+            });
+            
 
-            socket.emit('share',count,p);
         });
         
         
     };
+    
+    const shares=function(patient_id) {
+        common.checkRights(session.user.id,patient_id,true,function(pa){
+            if (pa==null) {
+                socket.emit('shares',null);
+                return;
+            }
+            
+            patient_access.leftjoin({users:'users'},[{'patient_access.patient':patient_id,'patient_access.users':['<>',session.user.id]}],null,function(pa){
+                socket.emit('shares',pa.data); 
+            });
+            
+            
+        });
+    };
+    
+    
+    const writeToggle=function(patient_id,who,mayWrite) {
+        common.checkRights(session.user.id,patient_id,true,function(pa){
+            if (pa==null) {
+                return;
+            }
+            
+            common.checkRights(who,patient_id,false,function(pa){
+                if (pa==null) {
+                    return;
+                }
+                patient_access.set({
+                    acl_write: mayWrite?1:null
+                },pa.id,function(pa){
+                });
+                
+            });
+        });
+       
+    };
+    
+    const unshare=function(patient_id,who) {
+        common.checkRights(session.user.id,patient_id,true,function(pa){
+            if (pa==null) {
+                return;
+            }
+            
+            common.checkRights(who,patient_id,false,function(pa){
+                if (pa==null) {
+                    return;
+                }
+                patient_access.remove(pa.id,function(){
+                });
+                
+            });
+        });
+        
+    }
  
     if (socket) {
         socket.on('add-patient',addPatient);
@@ -153,5 +220,8 @@ module.exports = function (database,socket,sockets,session,mailer) {
         socket.on('add-examination',addExamination);
         socket.on('examinations',examinations);
         socket.on('share',share);
+        socket.on('shares',shares);
+        socket.on('write',writeToggle);
+        socket.on('unshare',unshare);
     }
 }

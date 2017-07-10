@@ -89,32 +89,38 @@ module.exports = function(socket) {
                 var html='';
                 var year=new Date().getFullYear();
                 
-                html+='<input type="radio" name="gender['+full.id+']" value="M" id="g_m_'+full.id+'"';
-                if (full.gender!=null && full.gender=='M') html+=' checked';
-                html+='><label for="g_m_'+full.id+'" class="gm gender" title="'+$.translate('Male')+'"></label>';
-                
-                html+='<input type="radio" name="gender['+full.id+']" value="F" id="g_f_'+full.id+'"';
-                if (full.gender!=null && full.gender=='F') html+=' checked';
-                html+='><label for="g_f_'+full.id+'" class="gf gender" title="'+$.translate('Female')+'"></label>';
-                
-
-                
-                html+='<select name="mob">';
-                html+='<option value="">'+$.translate('Month of birth')+'</option>';
-                for (var i=1; i<=12;i++) {
-                    let selected=(full.mob!=null && full.mob==i)?' selected':'';
-                    html+='<option value="'+i+'"'+selected+'>'+moment.monthsShort()[i-1]+'</option>';
+                if (full.acl_write==1) {
+                    html+='<input type="radio" name="gender['+full.id+']" value="M" id="g_m_'+full.id+'"';
+                    if (full.gender!=null && full.gender=='M') html+=' checked';
+                    html+='><label for="g_m_'+full.id+'" class="gm gender" title="'+$.translate('Male')+'"></label>';
+                    
+                    html+='<input type="radio" name="gender['+full.id+']" value="F" id="g_f_'+full.id+'"';
+                    if (full.gender!=null && full.gender=='F') html+=' checked';
+                    html+='><label for="g_f_'+full.id+'" class="gf gender" title="'+$.translate('Female')+'"></label>';
+                    
+    
+                    
+                    html+='<select name="mob">';
+                    html+='<option value="">'+$.translate('Month of birth')+'</option>';
+                    for (var i=1; i<=12;i++) {
+                        let selected=(full.mob!=null && full.mob==i)?' selected':'';
+                        html+='<option value="'+i+'"'+selected+'>'+moment.monthsShort()[i-1]+'</option>';
+                    }
+                    html+='</select>';
+    
+                    html+='<select name="yob">';
+                    html+='<option value="">'+$.translate('Year of birth')+'</option>';
+                    for (var i=year; i>year-110;i--) {
+                        let selected=(full.yob!=null && full.yob==i)?' selected':'';
+                        html+='<option value="'+i+'"'+selected+'>'+i+'</option>';
+                    }
+                    html+='</select>';
+                                        
+                } else {
+                    var age=common.age(full.yob,full.mob);
+                    html+='<div class="age">'+common.gender(full.gender,age)+', '+age+'</div>';
                 }
-                html+='</select>';
 
-                html+='<select name="yob">';
-                html+='<option value="">'+$.translate('Year of birth')+'</option>';
-                for (var i=year; i>year-110;i--) {
-                    let selected=(full.yob!=null && full.yob==i)?' selected':'';
-                    html+='<option value="'+i+'"'+selected+'>'+i+'</option>';
-                }
-                html+='</select>';
-                
                 html+='<input type="checkbox" class="notifications" id="not_'+full.id+'"';
                 if (full.notifications!=null && full.notifications==1) {
                     html+=' checked';
@@ -132,11 +138,14 @@ module.exports = function(socket) {
             sortable: false,
             render: function ( data, type, full, meta ) {
                 var html='<select class="notshare"><option value="0">'+$.translate('Interviews')+'</option></select>';
-                html+='<div class="add notshare" title="'+$.translate('Add an interview')+'"></div>';
-                html+='<div class="share" title="'+$.translate('Share this patient')+'"></div>';
                 
-                html+='<div class="share-wraper"></div>';
-                html+='<input class="share" placeholder="'+$.translate('Enter comma separated emails')+'"/>';
+                if (full.acl_write==1) {
+                    html+='<div class="add notshare" title="'+$.translate('Add an interview')+'"></div>';
+                    html+='<div class="share" title="'+$.translate('Share this patient')+'"></div>';
+                    
+                    html+='<div class="share-wraper"></div>';
+                    html+='<input class="share" placeholder="'+$.translate('Enter comma separated emails')+'"/>';
+                }
                 return html;
             }
         }
@@ -219,22 +228,24 @@ module.exports = function(socket) {
         reader.readAsText(file);  
     };
     
-    const restorShare = function(input) {
+    const restoreShare = function(input) {
        var td=input.closest('td');
         input.fadeOut(500,function(){
             td.find('div.share-wraper').hide();
             td.find('.notshare,.select2,div.share').fadeIn(500);
-        });            
+            $('.sharer').fadeOut(500);
+        });
+        
     };
     
     
     $(document).on('change','.doctor .patients .interviews input.share',function(e){
-        restorShare($(this));
+        restoreShare($(this));
         if ($(this).val().trim().length>0) socket.emit('share',$(this).closest('tr').attr('id'),$(this).val(),language);
     });
     
     $(document).on('blur','.doctor .patients .interviews input.share',function(e){
-        if ($(this).val().trim().length==0) restorShare($(this));
+        if ($(this).val().trim().length==0) restoreShare($(this));
     });
     
     $(document).on('click','.doctor td.patient-name,.doctor td.patient-nick',function(e){
@@ -252,16 +263,64 @@ module.exports = function(socket) {
     });
     
     $(document).on('click','.doctor .interviews div.share',function(e){
-        var td=$(this).closest('td')
+        var td=$(this).closest('td');
+        var id=$(this).closest('tr').attr('id');
+        
         td.find('.notshare,.select2').fadeOut(500,function(){
             td.find('input.share').fadeIn(500).focus();
             td.find('div.share-wraper').show();
         });
         $(this).fadeOut(500);
-        
-
+        $('.sharer').attr('rel',id);
+        $('.sharer').attr('name',$(this).closest('tr').find('.patient-name').text());
+        $('.sharer').css({
+            top: e.pageY + 30,
+            right: 20
+        });
+        socket.emit('shares',id);
         
     });
+    
+    
+    $(document).on('click','.doctor .sharer ul div.write input',function(e){
+        var id=$(this).attr('id').split('_');
+        socket.emit('write',id[0],id[1],$(this).prop('checked'));
+    });
+    
+    $(document).on('click','.doctor .sharer ul div.remove',function(e){
+        var id=$(this).closest('li').attr('rel').split('_');
+        socket.emit('unshare',id[0],id[1]);
+    });
+    
+    socket.on('shares',function(shares) {
+        console.log(shares);
+        var id=$('.sharer').attr('rel');
+        var name=$('.sharer').attr('name');
+        
+        var input=$('table.patients #'+id+' input.share');
+        console.log(input);
+        if (shares==null) {
+            restoreShare(input);
+            input.hide();
+            toastr.error($.translate('You are not allowed to share')+' '+name,$.translate('Share'));
+        }
+        
+        if (shares.length>0) {
+            var html='<ul>';
+            for (var i=0; i<shares.length; i++) {
+                var aid=id+'_'+shares[i].users;
+                html+='<li rel="'+aid+'">';
+                html+='<div class="email">'+shares[i].email+'</div>';
+                var ch=shares[i].acl_write==1?'checked':'';
+                html+='<div class="write" title="'+$.translate('May change')+'"><input type="checkbox" '+ch+' id="'+aid+'"><label for="'+aid+'"></label></div>';
+                html+='<div class="remove" title="'+$.translate('Stop sharing')+'"></div>';
+                html+='</li>';
+            }
+            html+='</ul>';
+            $('.sharer').html(html).show();
+        }
+    }); 
+    
     
     socket.on('add-examination',function(examination){
         if (examination==null) {
@@ -334,7 +393,11 @@ module.exports = function(socket) {
     });
     
     socket.on('share',function(c,p){
-        toastr.success($.translate('You have shared data of')+' '+p.name+': '+c,$.translate('Share'));
+        if (c==null) {
+            toastr.error($.translate('You are not allowed to share')+' '+p.name,$.translate('Share'));
+        } else {
+            toastr.success($.translate('You have shared data of')+' '+p.name+': '+c,$.translate('Share'));
+        }
     })
     
     
