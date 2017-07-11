@@ -46,7 +46,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
             menu_datetime=selectedDates;
         }
     };
-    if (typeof(flatpickr_locales[navigator.language])!='undefined') {
+    if (typeof(flatpickr_locales[language])!='undefined') {
         flatpickr_opt.locale=flatpickr_locales[language][language];
     }
     

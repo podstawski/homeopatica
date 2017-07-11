@@ -1,7 +1,8 @@
-const dictionary = require('./langs.js');
+const   dictionary = require('./langs.js'),
+        common = require('./common.js');
 
 module.exports = function ( $ ) {    
-    var userLang = navigator.language || navigator.userLanguage;
+    var userLang = common.lang();
 
     $.extend({
         'translate': function (txt,lang) {

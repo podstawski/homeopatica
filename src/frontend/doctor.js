@@ -153,7 +153,7 @@ module.exports = function(socket) {
     
     $('table.patients').DataTable({
         language: {
-            url: dtlang(navigator.language || navigator.userLanguage)
+            url: dtlang(common.lang())
         },
         columns: patientColumns,
         order: []

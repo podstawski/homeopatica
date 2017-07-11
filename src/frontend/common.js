@@ -1,10 +1,16 @@
 const storage_name = 'homeopathy';
 const $ = require('jquery');
+const t_langs = require('./langs');
+
+var langs=[];
+for (var k in t_langs) langs.push(k);
 
 module.exports = {
     
     lang: function() {
-        return navigator.language || navigator.userLanguage;
+        var ret=navigator.language || navigator.userLanguage;
+        if (langs.indexOf(ret)==-1) ret='en';
+        return ret;
     },
     
     storage: function(myStorage) {

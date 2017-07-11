@@ -6,6 +6,11 @@ module.exports = {
     database:'homeopatica',
     listen_port: 3000,
     locale_spreadsheet: '1fy8j_PCoSvt1DV0NrCsCZyALJV8u63y9eUGkzcs1DRY',
+    questionnaire_spreadsheet: [
+        '1-xgH6EopwVes_OuaO33NBGvcT-Uh2cYNz1VjG_i_MCA',
+        '1XXgYnf_Oib3_tW3vhiwc2Hl7P7yFPbnJUI5coZc4snY',
+        '1Ytre8eKgzHUFSHh-cKETOsKCII9DVlSWTTs_cCevcFM'
+    ],
     nodemailer: {
         service: 'gmail',
         auth: {

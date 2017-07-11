@@ -1,5 +1,6 @@
 const  $ = require('jquery'),
-        toastr = require('toastr');
+        toastr = require('toastr'),
+        common = require('./common.js');
         
 require('../../public/css/toastr.min.css');
 
@@ -34,7 +35,7 @@ module.exports = function(socket) {
             email: email,
             password: pass,
             doctor: homeopath?1:0
-        },navigator.language || navigator.userLanguage);
+        },common.lang());
         
     });
     

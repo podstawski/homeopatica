@@ -370,6 +370,13 @@ var Model = function(opt,logger) {
             
         },
         
+        truncate: function(cb) {
+            var sql="TRUNCATE TABLE "+opt.table;
+            connection.query(sql,function(err,res) {
+                if (!err && cb) cb();
+            });
+        },
+        
         remove: function (idx,cb) {
             var sql="DELETE FROM "+opt.table+" WHERE "+indexCondition(idx);
     
