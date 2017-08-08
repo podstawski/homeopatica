@@ -369,13 +369,28 @@ body.doctor {
 }
 
 .doctor .sharer ul div.remove {
-    width: 7%;
-    background-image: url('delete.svg');
-    height: 12px;
+    width: 8%;
+    background-image: url('stop.svg');
+    height: 15px;
     background-repeat: no-repeat;
     cursor: pointer;
 }
 
+
+body.doctor .select2-results__option {
+    font-size: 13px;
+}
+
+
+@media (max-width: 1400px) {
+    body.doctor {
+        background-position: center -180px;
+    }
+    
+    .doctor .dataTables_wrapper {
+        margin-top: 150px;
+    }
+}
 
 @media (max-width: 500px) {
 	.login .login-panel,
@@ -389,15 +404,23 @@ body.doctor {
     .doctor .dataTables_wrapper {
         margin-top: 110px;
     }
-}
-
-
-@media (max-width: 1400px) {
-    body.doctor {
-        background-position: center -180px;
+    
+    body.doctor table.dataTable{
+        zoom: 0.5;
     }
     
-    .doctor .dataTables_wrapper {
-        margin-top: 150px;
+    table.patients th.attr,
+    table.patients td.attr {
+        display: none;
     }
+    
+    table.patients th.interviews {
+        width:40%;
+    }
+    
+    body.login,
+    body.signup {
+        font-size: 0.9em;
+    }
+    
 }

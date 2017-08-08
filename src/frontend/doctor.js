@@ -355,6 +355,21 @@ module.exports = function(socket) {
         datatable.rows.add(data);
         datatable.draw();
         
+        const select2zoom = function() {
+            if ($(window).width()<500) {
+                $('.select2-container--open').each(function(){
+                    if($(this).css('position')=='absolute') {
+                        $(this).css({
+                            left:'auto',
+                            right: '155px',
+                            zoom: '0.5'
+                        });
+                    }
+                    
+                });
+            }            
+        }
+        
         $('.doctor td.interviews select').select2({width:select2_width}).on('select2:opening',function(e){
             var element=$(this);
             
@@ -365,7 +380,10 @@ module.exports = function(socket) {
             
             socket.emit('examinations',$(this).closest('tr').attr('id'));
             socket.once('examinations',function(examinations){
+                
+                
                 if (!examinations || examinations.recordsTotal==0) {
+                    select2zoom();
                     return;
                 }
                 element.attr('examinations','1');
@@ -384,7 +402,12 @@ module.exports = function(socket) {
                 element.select2({data: options, width:select2_width});
                 element.select2('open');
                 
+                select2zoom();
+                
             });
+            
+            
+            
         }).on('select2:select',function(e){
             if( parseInt($(this).val())==0) return;
             window.location.href='/map/'+$(this).val();

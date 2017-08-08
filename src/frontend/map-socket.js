@@ -74,6 +74,8 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     socket.on('examination',function(examination) {
         
         var map={id: 'root', formatVersion: 3, ideas: {}, links:[]};
+        
+        console.log(examination);
           
         const join_ideas = function (src,dst,table,sub,notitlefun,everyrecfun) {
             if (src.length==0) return;
@@ -256,6 +258,15 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (typeof(nodes[node.id])=='undefined') return;
         
         if (typeof(node.attr)=='undefined' ) node.attr={};
+        
+        //bugfix:
+        if (node.id!=node.rootId && typeof(node.attr.position)!='undefined') {
+            console.log(mapModel.getIdea().getAttrById(node.rootId,'position'));
+            node.attr.position[0]=node.x - mapModel.getIdea().getAttrById(node.rootId,'position')[0];
+            delete(node.attr.position[2]);
+        }
+        console.log(node);
+    
         
         if (!lockWall('nodeAttrChanged','updateAttr',node.id,[nodes[node.id],node.attr])) return;
  

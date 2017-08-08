@@ -1,3 +1,5 @@
 node_modules
 public/site
 options.js
+session.json
+package-lock.json

@@ -9,6 +9,8 @@ const Doctor = require('./doctor-db.js');
 const Auth = require('./auth.js');
 const crypto = require('crypto');
 
+const sessionFile = __dirname+'/../session.json';
+
 function parseCookies (rc) {
     var list = {};
     rc && rc.split(';').forEach(function( cookie ) {
@@ -36,8 +38,25 @@ var Server = function(options,database,mailer,logger) {
 
     app.use(express.static(options.public_path));
     
+    const saveSessionExit = function() {
+        for (var h in session) {
+            if (typeof(session[h].socket)!='undefined') delete(session[h].socket);
+        }
+        fs.writeFile(sessionFile,JSON.stringify(session),function(err){   
+            process.exit();
+        });
+    }
     
-    var initSession = function(cookies,setcookie) {
+    fs.readFile(sessionFile,function(err,data){
+        if (err) return;
+        session=JSON.parse(data);
+    });
+    
+    process.on('SIGTERM',saveSessionExit);
+    process.on('SIGINT',saveSessionExit);
+
+    
+    const initSession = function(cookies,setcookie) {
   
         if (typeof(cookies.sessid)!='undefined') {
             var hash=cookies.sessid;

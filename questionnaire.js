@@ -21,6 +21,13 @@ var db=new Db(options,function(){
                         var answers_ids={};
                         var answers_queue={};
                         
+                        const questionnaire_add = function(q) {
+                            questionnaire.add(q,function(data){
+                                questionnaire_ids[data.code] = data.id;
+                                console.log('Question',data.code);
+                            });
+                        }
+                        
                         const runForestRun = function() {
                             
                             if (count(answers_queue)==0 && count(answers_ids)==0) {
@@ -34,6 +41,13 @@ var db=new Db(options,function(){
                                     answers_queue[code][i].questionnaire = questionnaire_ids[code];
                                     answers.add(answers_queue[code][i],function(a){
                                         console.log('Answer',a.code);
+                                        if (answers_ids[a.code]==null) return;
+                                        
+                                        for (var i=0; i<answers_ids[a.code].length; i++) {
+                                            answers_ids[a.code][i].answers = a.id;
+                                            questionnaire_add(answers_ids[a.code][i]);
+                                        }
+                                        delete(answers_ids[a.code]);
                                     });
                                 }
                                 delete (answers_queue[code]);
@@ -54,18 +68,15 @@ var db=new Db(options,function(){
                                     questionnaire_data[i][lang]=trans[lang][code];
                                 }
                             }
-                            if (questionnaire_data[i].answer!=null && questionnaire_data[i].answer.length>0) {
-                                if (answers_ids[questionnaire_data[i].answer]==null) {
-                                    answers_ids[questionnaire_data[i].answer]=[];
+                            if (questionnaire_data[i].answers!=null && questionnaire_data[i].answers.length>0) {
+                                if (answers_ids[questionnaire_data[i].answers]==null) {
+                                    answers_ids[questionnaire_data[i].answers]=[];
                                 }
-                                answers_ids[questionnaire_data[i].answer].push(questionnaire_data[i]);
+                                answers_ids[questionnaire_data[i].answers].push(questionnaire_data[i]);
                                 continue;
                             }
                             
-                            questionnaire.add(questionnaire_data[i],function(data){
-                                questionnaire_ids[data.code] = data.id;
-                                console.log('Question',data.code);
-                            });
+                            questionnaire_add(questionnaire_data[i]);
                             
                         }
                         
