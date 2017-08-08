@@ -54,6 +54,32 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     
     datepicker.setDate('2017-05-05');
     
+    const nodeXYbugfix=function(id,position) { 
+        if (typeof(mapModel.getCurrentLayout().nodes)=='undefined'
+            || typeof(mapModel.getCurrentLayout().nodes[id])=='undefined') {
+            return;
+        }
+        var node=mapModel.getCurrentLayout().nodes[id];
+        if (node.rootId==node.id) return;
+        if (position==null) {
+            if (typeof(node.attr)=='undefined' || typeof(node.attr.position)=='undefined')
+                return;
+            position=node.attr.position;
+        }
+        
+        
+        //if (node.attr.position[0]>0) return;
+        
+        var rootX=0,rootY=0;
+        if (typeof(mapModel.getCurrentLayout().nodes[node.rootId].attr)!='undefined'
+            && typeof(mapModel.getCurrentLayout().nodes[node.rootId].attr.position)!='undefined') {
+            rootX=mapModel.getCurrentLayout().nodes[node.rootId].attr.position[0];
+            rootY=mapModel.getCurrentLayout().nodes[node.rootId].attr.position[1];
+        }
+        
+        mapModel.standardPositionNodeAt(id,position[0]+rootX,position[1]+rootY,true);
+    }
+    
     const nodeIdx=function(v) {
 
         for (var x in nodes) {
@@ -74,8 +100,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     socket.on('examination',function(examination) {
         
         var map={id: 'root', formatVersion: 3, ideas: {}, links:[]};
-        
-        console.log(examination);
+  
           
         const join_ideas = function (src,dst,table,sub,notitlefun,everyrecfun) {
             if (src.length==0) return;
@@ -132,6 +157,10 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         
         
         socket.emit('examinations',examination.patient.id);
+        
+        
+        for (var id in nodes) nodeXYbugfix(id);
+    
     });
     
     socket.on('examinations',function(examinations) {
@@ -259,13 +288,15 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         
         if (typeof(node.attr)=='undefined' ) node.attr={};
         
-        //bugfix:
-        if (node.id!=node.rootId && typeof(node.attr.position)!='undefined') {
-            console.log(mapModel.getIdea().getAttrById(node.rootId,'position'));
-            node.attr.position[0]=node.x - mapModel.getIdea().getAttrById(node.rootId,'position')[0];
-            delete(node.attr.position[2]);
+        // <bugfix>
+        if (node.id!=node.rootId && typeof(node.attr.position)!='undefined' && typeof(node.x)!='undefined') {
+            node.attr.position=[
+                node.x - mapModel.getIdea().getAttrById(node.rootId,'position')[0],
+                node.attr.position[1]
+            ];
         }
-        console.log(node);
+        // </bugfix>
+        
     
         
         if (!lockWall('nodeAttrChanged','updateAttr',node.id,[nodes[node.id],node.attr])) return;
@@ -462,11 +493,12 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
     
     self.updateAttr = function (node_id,attr) {
         
-        
         for (var x in attr) {
-    
             mapModel.getIdea().updateAttr(node_id,x,attr[x]);
+            if (x=='position') nodeXYbugfix(node_id,attr[x]);
         }
+     
+        
     }
     
     self.dateChanged = function(node_id,date) {
