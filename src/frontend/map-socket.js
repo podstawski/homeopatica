@@ -153,14 +153,13 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         container.removeClass('loader');
         //console.log(map);return;
         mapModel.setIdea(content(map));
+        
+        for (var id in nodes) nodeXYbugfix(id);
         globalLock=false;
         
         
         socket.emit('examinations',examination.patient.id);
-        
-        
-        for (var id in nodes) nodeXYbugfix(id);
-    
+
     });
     
     socket.on('examinations',function(examinations) {
@@ -343,8 +342,9 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
                 };
                 setTimeout(checkIfTitleEnered,1000);
                 
-                mapModel.getIdea().updateAttr(node.id,'position',last_xy);
+                //mapModel.getIdea().updateAttr(node.id,'position',last_xy);
 
+                mapModel.standardPositionNodeAt(node.id,last_xy[0],last_xy[1],true);
             }
             createNode(node.id,'remedy',params);
             
@@ -430,6 +430,7 @@ module.exports = function (mapModel,socket,eid,container,menuContainer) {
         if (globalLock) return;
         if (typeof(nodes[node.id])=='undefined') return;
         
+        last_question=0;
         if (node.id==1) {
             globalLock=true;
             callbacks.push(function() {
